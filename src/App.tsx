@@ -760,7 +760,7 @@ export default function App() {
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: 20 }}
                     transition={{ duration: 0.3 }}
-                    className="h-[600px] w-full"
+                    className="h-[450px] md:h-[600px] w-full"
                   >
                     <StoreMap 
                       stores={stores} 
