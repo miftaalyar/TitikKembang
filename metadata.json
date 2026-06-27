@@ -1,0 +1,6 @@
+{
+  "name": "TitikKembang",
+  "description": "Hyper-local O2O marketplace for florists and crafters facilitating zero-delivery fee self-pickup through interactive map discovery.",
+  "requestFramePermissions": ["geolocation", "notifications"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

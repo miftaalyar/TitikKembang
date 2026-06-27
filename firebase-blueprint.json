@@ -1,0 +1,177 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile information",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "role": { "type": "string", "enum": ["customer", "florist", "admin"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "Store": {
+      "title": "Store",
+      "description": "Florist store details",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "ownerId": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "location": {
+          "type": "object",
+          "properties": {
+            "lat": { "type": "number" },
+            "lng": { "type": "number" },
+            "address": { "type": "string" }
+          }
+        },
+        "operatingHours": { "type": "string" },
+        "isVerified": { "type": "boolean" },
+        "portfolio": { "type": "array", "items": { "type": "string" } },
+        "rating": { "type": "number" },
+        "reviewCount": { "type": "integer" }
+      },
+      "required": ["ownerId", "name", "location"]
+    },
+    "Product": {
+      "title": "Product",
+      "description": "Product listing from a store",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "storeId": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "price": { "type": "number" },
+        "category": { "type": "string", "enum": ["Bunga Segar", "Buket Kawat Bulu", "Bunga Kering", "Kado Wisuda"] },
+        "images": { "type": "array", "items": { "type": "string" } },
+        "inventory": { "type": "integer" }
+      },
+      "required": ["storeId", "name", "price", "category"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "Customer order details",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "customerId": { "type": "string" },
+        "storeId": { "type": "string" },
+        "productId": { "type": "string" },
+        "amount": { "type": "number" },
+        "pickupTime": { "type": "string", "format": "date-time" },
+        "status": { "type": "string", "enum": ["Pesanan Diterima", "Sedang Dibuat", "Siap Diambil", "Selesai", "Dibatalkan"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["customerId", "storeId", "productId", "pickupTime", "status"]
+    },
+    "Review": {
+      "title": "Review",
+      "description": "Customer review of a store/product",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "orderId": { "type": "string" },
+        "customerId": { "type": "string" },
+        "storeId": { "type": "string" },
+        "rating": { "type": "integer" },
+        "comment": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["orderId", "customerId", "storeId", "rating"]
+    },
+    "PromoBanner": {
+      "title": "PromoBanner",
+      "description": "Slider promo banners managed by admins",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "imageUrl": { "type": "string" },
+        "linkUrl": { "type": "string" },
+        "order": { "type": "integer" },
+        "isActive": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "imageUrl"]
+    },
+    "Notification": {
+      "title": "Notification",
+      "description": "User in-app notifications",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "title": { "type": "string" },
+        "message": { "type": "string" },
+        "type": { "type": "string" },
+        "orderId": { "type": "string" },
+        "isRead": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "title", "message"]
+    },
+    "PremiumPayment": {
+      "title": "PremiumPayment",
+      "description": "Store premium ad payment submissions with proof screenshots",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "storeId": { "type": "string" },
+        "storeName": { "type": "string" },
+        "packageId": { "type": "string" },
+        "packageName": { "type": "string" },
+        "price": { "type": "number" },
+        "duration": { "type": "string" },
+        "proofImage": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "adType": { "type": "string" },
+        "rejectReason": { "type": "string" }
+      },
+      "required": ["storeId", "storeName", "packageId", "packageName", "price", "proofImage", "status", "adType"]
+    }
+  },
+  "firestore": {
+    "users/{userId}": {
+      "schema": "User",
+      "description": "User profile documents"
+    },
+    "stores/{storeId}": {
+      "schema": "Store",
+      "description": "Florist store documents"
+    },
+    "products/{productId}": {
+      "schema": "Product",
+      "description": "Product listing documents"
+    },
+    "orders/{orderId}": {
+      "schema": "Order",
+      "description": "Customer order documents"
+    },
+    "reviews/{reviewId}": {
+      "schema": "Review",
+      "description": "Customer review documents"
+    },
+    "promoBanners/{bannerId}": {
+      "schema": "PromoBanner",
+      "description": "Banner/slider iklan penawaran documents"
+    },
+    "notifications/{notificationId}": {
+      "schema": "Notification",
+      "description": "Real-time user notification documents"
+    },
+    "premiumPayments/{paymentId}": {
+      "schema": "PremiumPayment",
+      "description": "Sponsor premium/ads payment requests"
+    }
+  }
+}
