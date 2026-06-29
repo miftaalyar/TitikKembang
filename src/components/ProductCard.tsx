@@ -205,7 +205,7 @@ export default function ProductCard({ product, store }: ProductProps) {
               size="sm"
               variant="default"
               disabled={(product.inventory !== undefined && product.inventory !== null && product.inventory <= 0) || !!store?.isClosed}
-              className="w-full rounded-full text-[10px] sm:text-xs font-black h-8 shadow-md flex items-center justify-center gap-1.5 bg-rose-600 hover:bg-rose-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full rounded-full text-[10px] sm:text-xs font-black h-8 shadow-md flex items-center justify-center gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={(e) => {
                 e.stopPropagation();
                 setIsSchedulerOpen(true);

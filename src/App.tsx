@@ -143,6 +143,13 @@ export default function App() {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
       if (currentUser) {
+        // Fast optimistic role load from cache
+        const cachedRole = localStorage.getItem(`user-role-${currentUser.uid}`);
+        if (cachedRole) {
+          setUserRole(cachedRole as any);
+          setProfileRole(cachedRole as any);
+        }
+
         const profile = await getUserProfile(currentUser.uid);
         if (profile?.role) {
           const actualRole = currentUser.email?.toLowerCase() === "miftaalyar@gmail.com"
@@ -150,10 +157,12 @@ export default function App() {
             : (profile.role === "admin" ? "customer" : profile.role);
           setUserRole(actualRole);
           setProfileRole(actualRole);
+          localStorage.setItem(`user-role-${currentUser.uid}`, actualRole);
         } else {
           const defaultRole = currentUser.email?.toLowerCase() === "miftaalyar@gmail.com" ? "admin" : "customer";
           setUserRole(defaultRole);
           setProfileRole(defaultRole);
+          localStorage.setItem(`user-role-${currentUser.uid}`, defaultRole);
         }
       } else {
         setUserRole("customer");
@@ -169,10 +178,13 @@ export default function App() {
       const nextRole = e.detail;
       setUserRole(nextRole);
       setProfileRole(nextRole);
+      if (user) {
+        localStorage.setItem(`user-role-${user.uid}`, nextRole);
+      }
     };
     window.addEventListener("role-updated", handleRoleUpdated);
     return () => window.removeEventListener("role-updated", handleRoleUpdated);
-  }, []);
+  }, [user]);
 
   // Request Location and Notification Permissions politely
   useEffect(() => {
@@ -263,26 +275,33 @@ export default function App() {
   useEffect(() => {
     async function loadStoresAndCleanup() {
       try {
-        // Automatically delete store-1 and store-2 and their default products if they exist
-        await Promise.all([
-          deleteStore("store-1").catch(() => {}),
-          deleteStore("store-2").catch(() => {}),
-          deleteProduct("prod-1").catch(() => {}),
-          deleteProduct("prod-2").catch(() => {})
-        ]);
+        const cleanupDone = localStorage.getItem("cleanup_completed_v1");
+        if (!cleanupDone) {
+          // Automatically delete store-1 and store-2 and their default products if they exist
+          await Promise.all([
+            deleteStore("store-1").catch(() => {}),
+            deleteStore("store-2").catch(() => {}),
+            deleteProduct("prod-1").catch(() => {}),
+            deleteProduct("prod-2").catch(() => {})
+          ]);
+          localStorage.setItem("cleanup_completed_v1", "true");
+        }
         
         const s = await fetchStores();
-        const targetStore = s.find((st: any) => st.id === "IXrRBeWR" || st.storeId === "IXrRBeWR") as any;
-        if (targetStore && (targetStore.isFeatured || (targetStore.activeAds || []).some((ad: any) => ad.type === "slide_feeds"))) {
-          const updatedActiveAds = (targetStore.activeAds || []).filter((ad: any) => ad.type !== "slide_feeds");
-          await updateStoreProfile("IXrRBeWR", {
-            isFeatured: false,
-            activeAds: updatedActiveAds,
-            activeAdPkg: updatedActiveAds.length > 0 ? updatedActiveAds[updatedActiveAds.length - 1] : null
-          });
-          targetStore.isFeatured = false;
-          targetStore.activeAds = updatedActiveAds;
-          targetStore.activeAdPkg = updatedActiveAds.length > 0 ? updatedActiveAds[updatedActiveAds.length - 1] : null;
+        
+        if (!cleanupDone) {
+          const targetStore = s.find((st: any) => st.id === "IXrRBeWR" || st.storeId === "IXrRBeWR") as any;
+          if (targetStore && (targetStore.isFeatured || (targetStore.activeAds || []).some((ad: any) => ad.type === "slide_feeds"))) {
+            const updatedActiveAds = (targetStore.activeAds || []).filter((ad: any) => ad.type !== "slide_feeds");
+            await updateStoreProfile("IXrRBeWR", {
+              isFeatured: false,
+              activeAds: updatedActiveAds,
+              activeAdPkg: updatedActiveAds.length > 0 ? updatedActiveAds[updatedActiveAds.length - 1] : null
+            });
+            targetStore.isFeatured = false;
+            targetStore.activeAds = updatedActiveAds;
+            targetStore.activeAdPkg = updatedActiveAds.length > 0 ? updatedActiveAds[updatedActiveAds.length - 1] : null;
+          }
         }
 
         setStores([...s, ...DUMMY_STORES]);
@@ -548,13 +567,13 @@ export default function App() {
             </section>
 
             {/* View Toggle & Filters */}
-            <div id="catalog-section" className="sticky top-20 z-40 mb-8 flex flex-col gap-4 rounded-3xl bg-background/80 p-4 shadow-sm backdrop-blur-md md:flex-row md:items-center md:justify-between">
-              <div className="flex flex-wrap items-center gap-2 pb-1 md:pb-0">
+            <div id="catalog-section" className="sticky top-20 z-40 mb-8 flex flex-col gap-3 rounded-3xl bg-background/80 p-4 shadow-sm backdrop-blur-md md:flex-row md:items-center md:justify-between border border-secondary/30">
+              <div className="flex items-center gap-1.5 pb-1 md:pb-0 overflow-x-auto scrollbar-hide w-full md:w-auto -mx-4 px-4 md:mx-0 md:px-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                 {CATEGORIES.map((cat) => (
                   <Button
                     key={cat}
                     variant={selectedCategory === cat && !selectedStoreId ? "default" : "ghost"}
-                    className="rounded-full"
+                    className="rounded-full shrink-0 text-xs sm:text-sm h-9 px-4 font-semibold transition-all duration-200"
                     onClick={() => {
                       setSelectedCategory(cat);
                       setSelectedStoreId(null);
@@ -564,7 +583,7 @@ export default function App() {
                   </Button>
                 ))}
                 {selectedStoreId && (
-                  <Badge variant="secondary" className="rounded-full px-4 py-1.5 flex items-center gap-2 bg-primary/10 text-primary border-primary/20">
+                  <Badge variant="secondary" className="rounded-full px-4 py-1.5 flex items-center gap-2 bg-primary/10 text-primary border-primary/20 shrink-0">
                     <Store className="h-3 w-3" /> 
                     {stores.find(s => s.id === selectedStoreId)?.name || "Toko Dipilih"}
                     <Button 
@@ -579,23 +598,23 @@ export default function App() {
                 )}
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 w-full md:w-auto justify-between md:justify-end border-t border-secondary/45 pt-3 md:border-t-0 md:pt-0">
                 <Button
                   variant="outline"
                   size="sm"
-                  className="rounded-full"
+                  className="rounded-full flex-1 md:flex-initial text-xs sm:text-sm h-9"
                   onClick={() => setView(view === "map" ? "grid" : "map")}
                 >
-                  {view === "map" ? <LayoutGrid className="mr-2 h-4 w-4" /> : <MapIcon className="mr-2 h-4 w-4" />}
+                  {view === "map" ? <LayoutGrid className="mr-1.5 h-3.5 w-3.5" /> : <MapIcon className="mr-1.5 h-3.5 w-3.5" />}
                   {view === "map" ? "Lihat Katalog" : "Lihat Peta"}
                 </Button>
                 <Button 
                   variant={showFilterOptions ? "default" : "outline"} 
                   size="sm" 
-                  className="rounded-full"
+                  className="rounded-full flex-1 md:flex-initial text-xs sm:text-sm h-9"
                   onClick={() => setShowFilterOptions(!showFilterOptions)}
                 >
-                  <Filter className="mr-2 h-4 w-4" /> {showFilterOptions ? "Sembunyikan Filter" : "Urutkan & Filter"}
+                  <Filter className="mr-1.5 h-3.5 w-3.5" /> {showFilterOptions ? "Sembunyikan" : "Urutkan & Filter"}
                 </Button>
               </div>
             </div>
@@ -727,7 +746,7 @@ export default function App() {
                         </Button>
                       </div>
                     ) : (
-                      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 w-full" id="staggered-masonry-catalog">
+                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 w-full" id="staggered-masonry-catalog">
                         <PaidFeedsSlider 
                           key="paid-feeds"
                           stores={stores}

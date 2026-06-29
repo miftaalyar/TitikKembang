@@ -24,7 +24,8 @@ import {
   Globe,
   Upload,
   QrCode,
-  X
+  X,
+  Menu
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -60,7 +61,8 @@ import {
   fetchWebConfig,
   updateWebConfig,
   fetchPremiumPayments,
-  updatePremiumPaymentStatus
+  updatePremiumPaymentStatus,
+  updateUserProfile
 } from "@/src/lib/dataService";
 import { toast } from "sonner";
 import { Trash2, Database, HelpCircle } from "lucide-react";
@@ -119,6 +121,7 @@ export default function AdminDashboard() {
 
   // Search filter states
   const [activeTab, setActiveTab] = useState("verification");
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [verificationSearchQuery, setVerificationSearchQuery] = useState("");
   const [storesSearchQuery, setStoresSearchQuery] = useState("");
   const [promotionsSearchQuery, setPromotionsSearchQuery] = useState("");
@@ -496,6 +499,11 @@ export default function AdminDashboard() {
   const handleApprove = async (id: string) => {
     try {
       await updateStoreStatus(id, true);
+      try {
+        await updateUserProfile(id, { role: "florist" });
+      } catch (roleErr) {
+        console.warn("Failed to update user profile role in admin approval:", roleErr);
+      }
       setPending(pending.filter(p => p.id !== id));
       setStores(stores.map(s => s.id === id ? { ...s, isVerified: true } : s));
       toast.success("Mitra berhasil disetujui!");
@@ -952,32 +960,238 @@ export default function AdminDashboard() {
         ))}
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="bg-secondary/50 rounded-2xl lg:rounded-full h-auto p-1 flex flex-wrap lg:flex-nowrap gap-1">
-          <TabsTrigger value="verification" className="rounded-full px-5 py-1.5 text-xs lg:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-            Antrean Verifikasi ({pending.length})
-          </TabsTrigger>
-          <TabsTrigger value="stores" className="rounded-full px-5 py-1.5 text-xs lg:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-            Semua Toko ({stores.length})
-          </TabsTrigger>
-          <TabsTrigger value="promotions" className="rounded-full px-5 py-1.5 text-xs lg:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground flex items-center gap-1.5">
-            <DollarSign className="h-3.5 w-3.5 text-emerald-500" /> Promosi Berbayar ({stores.filter((s: any) => s.isFeatured).length})
-          </TabsTrigger>
-          <TabsTrigger value="ads" className="rounded-full px-5 py-1.5 text-xs lg:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground flex items-center gap-1.5">
-            <Sparkles className="h-3.5 w-3.5 text-amber-500 animate-pulse" /> Paket Iklan ({adPackages.length})
-          </TabsTrigger>
-          <TabsTrigger value="banners" className="rounded-full px-5 py-1.5 text-xs lg:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground flex items-center gap-1.5">
-            <ImageIcon className="h-3.5 w-3.5 text-blue-500" /> Promo Slider ({promoBanners.length})
-          </TabsTrigger>
-          <TabsTrigger value="webProfile" className="rounded-full px-5 py-1.5 text-xs lg:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground flex items-center gap-1.5">
-            <Settings className="h-3.5 w-3.5 text-purple-500 animate-spin-slow" /> Profil & Pengaturan Web
-          </TabsTrigger>
-          <TabsTrigger value="system" className="rounded-full px-5 py-1.5 text-xs lg:text-sm text-red-650 hover:text-red-700 data-[state=active]:bg-red-600 data-[state=active]:text-white transition-colors">
-            Database & Sistem
-          </TabsTrigger>
-        </TabsList>
+      <Tabs value={activeTab} onValueChange={(val) => { setActiveTab(val); setIsSidebarOpen(false); }} className="w-full">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start relative">
+          
+          {/* Mobile Sidebar Toggle Header */}
+          <div className="col-span-12 lg:hidden flex items-center justify-between p-4 bg-secondary/30 rounded-3xl border border-secondary/50">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 bg-primary/10 text-primary rounded-xl">
+                {activeTab === "verification" && <ShieldCheck size={18} />}
+                {activeTab === "stores" && <Store size={18} />}
+                {activeTab === "promotions" && <DollarSign size={18} className="text-emerald-600" />}
+                {activeTab === "ads" && <Sparkles size={18} className="text-amber-500 animate-pulse" />}
+                {activeTab === "banners" && <ImageIcon size={18} className="text-blue-500" />}
+                {activeTab === "webProfile" && <Settings size={18} className="text-purple-500 animate-spin-slow" />}
+                {activeTab === "system" && <Database size={18} className="text-red-650" />}
+              </div>
+              <div>
+                <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider block">Panel Admin</span>
+                <h4 className="text-sm font-bold text-primary leading-none">
+                  {activeTab === "verification" && "Antrean Verifikasi"}
+                  {activeTab === "stores" && "Semua Toko"}
+                  {activeTab === "promotions" && "Promosi Berbayar"}
+                  {activeTab === "ads" && "Paket Iklan"}
+                  {activeTab === "banners" && "Promo Slider"}
+                  {activeTab === "webProfile" && "Profil & Pengaturan Web"}
+                  {activeTab === "system" && "Database & Sistem"}
+                </h4>
+              </div>
+            </div>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsSidebarOpen(true)}
+              className="rounded-full flex items-center gap-1.5 text-xs border-primary/20 hover:bg-primary/5 text-primary"
+            >
+              <Menu size={14} />
+              <span>Menu Panel</span>
+            </Button>
+          </div>
 
-        <TabsContent value="verification" className="mt-6 border-none">
+          {/* Backdrop for mobile sidebar drawer */}
+          {isSidebarOpen && (
+            <div 
+              className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[80] lg:hidden transition-opacity duration-300"
+              onClick={() => setIsSidebarOpen(false)}
+            />
+          )}
+
+          {/* Sidebar Panel - persistent on desktop, drawer on mobile */}
+          <div className={`
+            col-span-12 lg:col-span-3 
+            fixed inset-y-0 left-0 z-[90] w-72 bg-card p-6 border-r border-secondary/50 shadow-2xl lg:shadow-none
+            lg:relative lg:inset-auto lg:z-auto lg:w-auto lg:bg-transparent lg:p-0 lg:border-none
+            transform transition-transform duration-300 ease-in-out h-full lg:h-auto
+            ${isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
+          `}>
+            {/* Sidebar content container */}
+            <Card className="rounded-3xl border border-secondary/50 bg-card/60 backdrop-blur-md p-4 lg:p-5 h-full lg:sticky lg:top-6 flex flex-col justify-between shadow-sm">
+              <div className="space-y-6">
+                {/* Sidebar Header */}
+                <div className="flex items-center justify-between lg:justify-start gap-3 border-b border-secondary/60 pb-4">
+                  <div className="flex items-center gap-2.5">
+                    <div className="p-2 bg-primary text-primary-foreground rounded-xl shadow-md shadow-primary/20">
+                      <ShieldCheck size={18} />
+                    </div>
+                    <div>
+                      <h3 className="font-heading font-bold text-sm text-primary leading-none">Admin Panel</h3>
+                      <p className="text-[10px] text-muted-foreground mt-1">Control Center</p>
+                    </div>
+                  </div>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    onClick={() => setIsSidebarOpen(false)}
+                    className="lg:hidden rounded-full h-8 w-8 text-muted-foreground hover:bg-secondary"
+                  >
+                    <X size={16} />
+                  </Button>
+                </div>
+
+                {/* Sidebar Tab Triggers */}
+                <div className="space-y-1.5">
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider pl-3 block mb-2">Navigasi Utama</span>
+                  
+                  {/* Verification Trigger */}
+                  <button
+                    onClick={() => { setActiveTab("verification"); setIsSidebarOpen(false); }}
+                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all duration-200 text-left ${
+                      activeTab === "verification" 
+                        ? "bg-primary text-primary-foreground shadow-sm font-bold" 
+                        : "text-muted-foreground hover:bg-secondary/40 hover:text-primary"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <ShieldCheck size={16} className={activeTab === "verification" ? "text-primary-foreground" : "text-primary/70"} />
+                      <span>Antrean Verifikasi</span>
+                    </div>
+                    <Badge variant={activeTab === "verification" ? "secondary" : "outline"} className={`rounded-full px-2 py-0.5 text-[10px] ${
+                      activeTab === "verification" ? "bg-white/20 text-white border-transparent" : "bg-primary/5 text-primary border-primary/20"
+                    }`}>
+                      {pending.length}
+                    </Badge>
+                  </button>
+
+                  {/* Stores Trigger */}
+                  <button
+                    onClick={() => { setActiveTab("stores"); setIsSidebarOpen(false); }}
+                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all duration-200 text-left ${
+                      activeTab === "stores" 
+                        ? "bg-primary text-primary-foreground shadow-sm font-bold" 
+                        : "text-muted-foreground hover:bg-secondary/40 hover:text-primary"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <Store size={16} className={activeTab === "stores" ? "text-primary-foreground" : "text-primary/70"} />
+                      <span>Semua Toko</span>
+                    </div>
+                    <Badge variant={activeTab === "stores" ? "secondary" : "outline"} className={`rounded-full px-2 py-0.5 text-[10px] ${
+                      activeTab === "stores" ? "bg-white/20 text-white border-transparent" : "bg-primary/5 text-primary border-primary/20"
+                    }`}>
+                      {stores.length}
+                    </Badge>
+                  </button>
+
+                  {/* Promotions Trigger */}
+                  <button
+                    onClick={() => { setActiveTab("promotions"); setIsSidebarOpen(false); }}
+                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all duration-200 text-left ${
+                      activeTab === "promotions" 
+                        ? "bg-primary text-primary-foreground shadow-sm font-bold" 
+                        : "text-muted-foreground hover:bg-secondary/40 hover:text-primary"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <DollarSign size={16} className={activeTab === "promotions" ? "text-emerald-350 text-emerald-300" : "text-emerald-500"} />
+                      <span>Promosi Berbayar</span>
+                    </div>
+                    <Badge variant={activeTab === "promotions" ? "secondary" : "outline"} className={`rounded-full px-2 py-0.5 text-[10px] ${
+                      activeTab === "promotions" ? "bg-white/20 text-white border-transparent" : "bg-emerald-50 text-emerald-700 border-emerald-200"
+                    }`}>
+                      {stores.filter((s: any) => s.isFeatured).length}
+                    </Badge>
+                  </button>
+
+                  {/* Ads Trigger */}
+                  <button
+                    onClick={() => { setActiveTab("ads"); setIsSidebarOpen(false); }}
+                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all duration-200 text-left ${
+                      activeTab === "ads" 
+                        ? "bg-primary text-primary-foreground shadow-sm font-bold" 
+                        : "text-muted-foreground hover:bg-secondary/40 hover:text-primary"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <Sparkles size={16} className={activeTab === "ads" ? "text-amber-300 animate-pulse" : "text-amber-500"} />
+                      <span>Paket Iklan</span>
+                    </div>
+                    <Badge variant={activeTab === "ads" ? "secondary" : "outline"} className={`rounded-full px-2 py-0.5 text-[10px] ${
+                      activeTab === "ads" ? "bg-white/20 text-white border-transparent" : "bg-amber-50 text-amber-700 border-amber-200"
+                    }`}>
+                      {adPackages.length}
+                    </Badge>
+                  </button>
+
+                  {/* Banners Trigger */}
+                  <button
+                    onClick={() => { setActiveTab("banners"); setIsSidebarOpen(false); }}
+                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all duration-200 text-left ${
+                      activeTab === "banners" 
+                        ? "bg-primary text-primary-foreground shadow-sm font-bold" 
+                        : "text-muted-foreground hover:bg-secondary/40 hover:text-primary"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <ImageIcon size={16} className={activeTab === "banners" ? "text-blue-300" : "text-blue-500"} />
+                      <span>Promo Slider</span>
+                    </div>
+                    <Badge variant={activeTab === "banners" ? "secondary" : "outline"} className={`rounded-full px-2 py-0.5 text-[10px] ${
+                      activeTab === "banners" ? "bg-white/20 text-white border-transparent" : "bg-blue-50 text-blue-700 border-blue-200"
+                    }`}>
+                      {promoBanners.length}
+                    </Badge>
+                  </button>
+
+                  {/* Web Profile Trigger */}
+                  <button
+                    onClick={() => { setActiveTab("webProfile"); setIsSidebarOpen(false); }}
+                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all duration-200 text-left ${
+                      activeTab === "webProfile" 
+                        ? "bg-primary text-primary-foreground shadow-sm font-bold" 
+                        : "text-muted-foreground hover:bg-secondary/40 hover:text-primary"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <Settings size={16} className={activeTab === "webProfile" ? "text-purple-300 animate-spin-slow" : "text-purple-500"} />
+                      <span>Profil & Pengaturan Web</span>
+                    </div>
+                  </button>
+
+                  {/* System Trigger */}
+                  <button
+                    onClick={() => { setActiveTab("system"); setIsSidebarOpen(false); }}
+                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all duration-200 text-left ${
+                      activeTab === "system" 
+                        ? "bg-red-600 text-white shadow-sm font-bold" 
+                        : "text-red-650 hover:bg-red-50 hover:text-red-750"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <Database size={16} className={activeTab === "system" ? "text-white" : "text-red-650"} />
+                      <span>Database & Sistem</span>
+                    </div>
+                  </button>
+                </div>
+              </div>
+
+              {/* Sidebar Footer */}
+              <div className="border-t border-secondary/60 pt-4 mt-6">
+                <div className="rounded-2xl bg-secondary/30 p-3 text-center border border-secondary/40">
+                  <p className="text-[10px] font-medium text-muted-foreground">Admin Mode Active</p>
+                  <div className="mt-1 flex items-center justify-center gap-1.5 text-[10px] font-bold text-emerald-600">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    <span>Secure Session</span>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          </div>
+
+          {/* Main Content Panel */}
+          <div className="col-span-12 lg:col-span-9 space-y-6">
+            <TabsContent value="verification" className="mt-0 border-none">
           {/* Search bar inside Verification Tab */}
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
             <div>
@@ -2860,6 +3074,8 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
         </TabsContent>
+          </div> {/* Closing col-span-12 lg:col-span-9 space-y-6 */}
+        </div> {/* Closing grid grid-cols-1 lg:grid-cols-12 gap-8 items-start relative */}
       </Tabs>
 
       {/* Dynamic confirm Dialog to bypass iframe popup blocking */}

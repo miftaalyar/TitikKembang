@@ -46,7 +46,7 @@ import {
   Play,
   Pause
 } from "lucide-react";
-import { fetchOrders, updateOrderStatus, fetchProducts, getStore, updateStoreProfile, deleteProduct, fetchAdPackages, updateProduct, submitPremiumPayment, fetchStorePremiumPayments } from "@/src/lib/dataService";
+import { fetchOrders, updateOrderStatus, fetchProducts, getStore, updateStoreProfile, deleteProduct, fetchAdPackages, updateProduct, submitPremiumPayment, fetchStorePremiumPayments, updateUserProfile } from "@/src/lib/dataService";
 import TrackingStepper from "@/src/components/TrackingStepper";
 import QrisPaymentCode from "@/src/components/QrisPaymentCode";
 import { Input } from "@/components/ui/input";
@@ -292,30 +292,57 @@ export default function FloristDashboard() {
     if (!silent) {
       setIsRefreshing(true);
     }
+
+    const cacheStoreKey = `cached-florist-store-${user.uid}`;
+    const cachePkgsKey = `cached-florist-pkgs-${user.uid}`;
+    const cachePaymentsKey = `cached-florist-payments-${user.uid}`;
+    const cacheOrdersKey = `cached-florist-orders-${user.uid}`;
+    const cacheProductsKey = `cached-florist-products-${user.uid}`;
+
+    try {
+      const cachedStore = localStorage.getItem(cacheStoreKey);
+      const cachedPkgs = localStorage.getItem(cachePkgsKey);
+      const cachedPayments = localStorage.getItem(cachePaymentsKey);
+      const cachedOrders = localStorage.getItem(cacheOrdersKey);
+      const cachedProducts = localStorage.getItem(cacheProductsKey);
+
+      if (cachedStore) {
+        setStoreInfo(JSON.parse(cachedStore));
+        setStoreExists(true);
+      }
+      if (cachedPkgs) setAdPackages(JSON.parse(cachedPkgs));
+      if (cachedPayments) setPendingPayments(JSON.parse(cachedPayments));
+      if (cachedOrders) setOrders(JSON.parse(cachedOrders));
+      if (cachedProducts) setProducts(JSON.parse(cachedProducts));
+      
+      if (cachedStore) {
+        setLoading(false);
+      }
+    } catch (err) {
+      console.warn("Could not load cached florist dashboard data:", err);
+    }
     
     try {
-      // 1. First retrieve the store profile using point lookup (extremely fast)
       const s = await getStore(user.uid);
-      
-      // 2. Load Ad Packages (from Firestore)
       const pkgs = await fetchAdPackages();
       setAdPackages(pkgs || []);
+      localStorage.setItem(cachePkgsKey, JSON.stringify(pkgs || []));
 
       const pPayments = await fetchStorePremiumPayments(user.uid);
       setPendingPayments(pPayments || []);
+      localStorage.setItem(cachePaymentsKey, JSON.stringify(pPayments || []));
       
       if (s) {
         setStoreInfo(s);
         setStoreExists(true);
+        localStorage.setItem(cacheStoreKey, JSON.stringify(s));
         
-        // Only fetch orders and products if the store is verified and active
         if ((s as any).isVerified) {
           const [o, p] = await Promise.all([
             fetchOrders(user.uid),
             fetchProducts(undefined, user.uid)
           ]);
           
-          // Compare with current orders to find newly arrived ones
           if (orders.length > 0 && o && o.length > orders.length) {
             const currentIds = new Set(orders.map(item => item.id));
             const newOrders = o.filter((item: any) => !currentIds.has(item.id));
@@ -334,7 +361,9 @@ export default function FloristDashboard() {
           }
           
           setOrders(o || []);
+          localStorage.setItem(cacheOrdersKey, JSON.stringify(o || []));
           setProducts(p || []);
+          localStorage.setItem(cacheProductsKey, JSON.stringify(p || []));
         } else {
           setOrders([]);
           setProducts([]);
@@ -343,7 +372,6 @@ export default function FloristDashboard() {
         setStoreExists(false);
         setOrders([]);
         setProducts([]);
-        // Init store info if not exists
         setStoreInfo({
           id: user.uid,
           name: "",
@@ -679,6 +707,12 @@ export default function FloristDashboard() {
         portfolio: [imgUrl]
       };
       await updateStoreProfile(user.uid, registrationData);
+      try {
+        await updateUserProfile(user.uid, { role: "florist" });
+        window.dispatchEvent(new CustomEvent("role-updated", { detail: "florist" }));
+      } catch (roleErr) {
+        console.warn("Failed to update user profile role:", roleErr);
+      }
       setStoreInfo(registrationData);
       setStoreExists(true);
       toast.success("Pendaftaran dikirim! Tunggu persetujuan dari Admin.");

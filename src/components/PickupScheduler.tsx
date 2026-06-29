@@ -334,7 +334,7 @@ export default function PickupScheduler({ isOpen, onOpenChange, product, store }
           <div className="flex gap-2 shrink-0 select-none">
             <Button 
               type="button"
-              className="rounded-full px-6 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs h-11 shadow-lg shadow-rose-500/10 flex items-center justify-center gap-1.5" 
+              className="rounded-full px-6 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs h-11 shadow-lg shadow-primary/10 flex items-center justify-center gap-1.5" 
               disabled={isSubmitting || !selectedSlot}
               onClick={handleOrder}
               title={!selectedSlot ? "Silakan jadwalkan tanggal & jam pick-up untuk beli sekarang" : ""}

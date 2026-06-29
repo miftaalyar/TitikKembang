@@ -156,6 +156,31 @@ export default function CustomerDashboard({ onBackToCatalog }: CustomerDashboard
       return;
     }
 
+    // Load cached customer profile and data instantly
+    const cacheProfileKey = `cached-customer-profile-${currentUser.uid}`;
+    const cacheOrdersKey = `cached-customer-orders-${currentUser.uid}`;
+    try {
+      const cachedProfile = localStorage.getItem(cacheProfileKey);
+      const cachedOrders = localStorage.getItem(cacheOrdersKey);
+      
+      if (cachedProfile) {
+        const parsedProfile = JSON.parse(cachedProfile);
+        setProfile(parsedProfile);
+        setEditName(parsedProfile.name);
+        setEditPhone(parsedProfile.phone || "");
+        setEditAddress(parsedProfile.address || "");
+        setEditBio(parsedProfile.bio || "");
+        setEditAvatarUrl(parsedProfile.avatarUrl || "");
+        setEditAvatarLogo(parsedProfile.avatarLogo || "🌸");
+        setLoading(false); // Can bypass absolute block early
+      }
+      if (cachedOrders) {
+        setOrders(JSON.parse(cachedOrders));
+      }
+    } catch (err) {
+      console.warn("Could not read cached customer profile:", err);
+    }
+
     try {
       const [fetchedProfile, fetchedOrders, fetchedStores] = await Promise.all([
         getUserProfile(currentUser.uid),
@@ -175,11 +200,16 @@ export default function CustomerDashboard({ onBackToCatalog }: CustomerDashboard
       };
 
       setProfile(mergedProfile);
-      setOrders(fetchedOrders.sort((a: any, b: any) => {
+      localStorage.setItem(cacheProfileKey, JSON.stringify(mergedProfile));
+
+      const sorted = fetchedOrders.sort((a: any, b: any) => {
         const timeA = a.createdAt?.seconds ? a.createdAt.seconds : new Date(a.createdAt || 0).getTime() / 1000;
         const timeB = b.createdAt?.seconds ? b.createdAt.seconds : new Date(b.createdAt || 0).getTime() / 1000;
         return timeB - timeA;
-      }));
+      });
+      setOrders(sorted);
+      localStorage.setItem(cacheOrdersKey, JSON.stringify(sorted));
+
       setAllStores(fetchedStores);
 
       // Find all completed orders that haven't been reviewed yet
