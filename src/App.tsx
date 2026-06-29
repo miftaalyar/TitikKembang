@@ -411,7 +411,7 @@ export default function App() {
               }}
             />
             {webConfig.promoText && (
-              <div className="shrink-0 text-[10px] bg-orange-500 text-white font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider shadow-md select-none">
+              <div className="hidden sm:block shrink-0 text-[10px] bg-orange-500 text-white font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider shadow-md select-none">
                 ✨ {webConfig.promoText}
               </div>
             )}

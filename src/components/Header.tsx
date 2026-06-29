@@ -131,13 +131,13 @@ export default function Header({
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container mx-auto flex h-20 items-center justify-between px-4 md:px-8">
+      <div className="container mx-auto flex h-16 md:h-20 items-center justify-between px-4 md:px-8">
         
         {/* Logo and Brand */}
-        <div className="flex items-center gap-2 cursor-pointer" onClick={() => onSwitchView?.("grid")} id="titikkembang-brand-wrapper">
+        <div className="flex items-center gap-1.5 sm:gap-2 cursor-pointer shrink-0" onClick={() => onSwitchView?.("grid")} id="titikkembang-brand-wrapper">
           <div 
             id="titikkembang-logo-box" 
-            className="flex h-10 w-10 items-center justify-center rounded-2xl shadow-lg transition-all hover:scale-105 active:scale-95 duration-200 overflow-hidden"
+            className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl sm:rounded-2xl shadow-lg transition-all hover:scale-105 active:scale-95 duration-200 overflow-hidden"
             style={{ 
               backgroundColor: webConfig?.logoType === "custom_url" && webConfig?.logoUrl ? "transparent" : (webConfig?.logoBgColor || "#1E3E2A"),
               color: webConfig?.logoTextColor || "#E8F2EC",
@@ -149,7 +149,7 @@ export default function Header({
                 id="titikkembang-logo-img"
                 src={webConfig.logoUrl} 
                 alt={webConfig.brandName || "Logo"} 
-                className="h-full w-full object-cover rounded-2xl" 
+                className="h-full w-full object-cover rounded-xl sm:rounded-2xl" 
                 referrerPolicy="no-referrer"
               />
             ) : (
@@ -158,7 +158,7 @@ export default function Header({
                 viewBox="0 0 100 100" 
                 fill="none" 
                 xmlns="http://www.w3.org/2000/svg" 
-                className="h-6 w-6"
+                className="h-5.5 w-5.5 sm:h-6 sm:w-6"
               >
                 {/* Elegant Thin Rounded Capsule */}
                 <rect 
@@ -221,7 +221,7 @@ export default function Header({
               </svg>
             )}
           </div>
-          <span className="font-heading text-xl font-bold tracking-tight text-gray-800 animate-fade-in" id="titikkembang-brand-label">
+          <span className="font-heading text-base sm:text-lg md:text-xl font-bold tracking-tight text-gray-800 animate-fade-in" id="titikkembang-brand-label">
             {(!webConfig.brandName || webConfig.brandName === "TitikKembang") ? (
               <>Titik<span className="text-primary">Kembang</span></>
             ) : (
@@ -439,7 +439,7 @@ export default function Header({
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="rounded-full h-9 w-9 hover:bg-red-50 hover:text-red-650 transition-colors" 
+                className="hidden md:inline-flex rounded-full h-9 w-9 hover:bg-red-50 hover:text-red-650 transition-colors" 
                 onClick={onLogout}
                 title="Keluar"
               >
@@ -448,19 +448,29 @@ export default function Header({
             </div>
           ) : (
             <div className="flex items-center gap-2">
+              <div className="hidden md:flex items-center gap-2">
+                <Button 
+                  variant="outline" 
+                  className="rounded-full h-11 px-5 border-primary/20 text-primary hover:bg-primary/5 font-semibold text-xs sm:text-sm flex items-center gap-1.5" 
+                  onClick={() => onOpenAuth("login", "customer")}
+                >
+                  <Search className="h-4 w-4" /> Cari Bunga
+                </Button>
+                <Button 
+                  variant="default" 
+                  className="rounded-full h-11 px-5 font-semibold text-xs sm:text-sm flex items-center gap-1.5 shadow-md shadow-primary/10" 
+                  onClick={() => onOpenAuth("login", "florist")}
+                >
+                  <Store className="h-4 w-4" /> Jual Bunga
+                </Button>
+              </div>
               <Button 
                 variant="outline" 
-                className="rounded-full h-11 px-5 border-primary/20 text-primary hover:bg-primary/5 font-semibold text-xs sm:text-sm flex items-center gap-1.5" 
+                size="sm"
+                className="md:hidden rounded-full text-xs h-9 font-bold px-3 border-primary/25 text-primary hover:bg-primary/5 shrink-0" 
                 onClick={() => onOpenAuth("login", "customer")}
               >
-                <Search className="h-4 w-4" /> Cari Bunga
-              </Button>
-              <Button 
-                variant="default" 
-                className="rounded-full h-11 px-5 font-semibold text-xs sm:text-sm flex items-center gap-1.5 shadow-md shadow-primary/10" 
-                onClick={() => onOpenAuth("login", "florist")}
-              >
-                <Store className="h-4 w-4" /> Jual Bunga
+                Masuk
               </Button>
             </div>
           )}
@@ -478,7 +488,7 @@ export default function Header({
 
       {/* Mobile Drawer */}
       {isMobileMenuOpen && (
-        <div className="md:hidden fixed top-20 inset-x-0 bg-background/95 border-b z-50 p-6 shadow-xl flex flex-col gap-5 animate-in fade-in slide-in-from-top-2 duration-150 backdrop-blur-md">
+        <div className="md:hidden fixed top-16 md:top-20 inset-x-0 bg-background/95 border-b z-50 p-6 shadow-xl flex flex-col gap-5 animate-in fade-in slide-in-from-top-2 duration-150 backdrop-blur-md">
           <div className="relative w-full">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
