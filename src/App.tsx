@@ -487,17 +487,17 @@ export default function App() {
                   <TrendingUp className="mr-2 h-3 w-3 text-emerald-600 animate-pulse" /> 
                   Local Marketplace O2O Terpercaya
                 </Badge>
-                <h1 className="font-heading text-5xl font-bold tracking-tight text-primary md:text-7xl">
+                <h1 className="font-heading text-3xl sm:text-5xl md:text-7xl font-bold tracking-tight text-primary leading-tight">
                   {webConfig.brandName || "TitikKembang"}, <br />
-                  <span className="text-foreground">Ambil Sendiri di Titik Terdekat.</span>
+                  <span className="text-foreground text-2xl sm:text-4xl md:text-6xl block mt-1">Ambil Sendiri di Titik Terdekat.</span>
                 </h1>
-                <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground md:text-xl">
+                <p className="mx-auto mt-4 sm:mt-6 max-w-2xl text-sm sm:text-lg text-muted-foreground md:text-xl leading-relaxed">
                   {webConfig.slogan || "Portal Buket & Kerajinan Kawat Bulu Premium Terlengkap."}
                 </p>
-              <div className="mt-8 flex justify-center">
+              <div className="mt-6 sm:mt-8 flex justify-center">
                 <Button 
                   size="lg" 
-                  className="h-14 rounded-full px-10 text-lg font-extrabold bg-primary text-primary-foreground hover:bg-primary/95 shadow-xl shadow-primary/20 hover:shadow-primary/30 transition-all duration-300 flex items-center gap-2.5" 
+                  className="h-12 sm:h-14 rounded-full px-8 sm:px-10 text-sm sm:text-lg font-extrabold bg-primary text-primary-foreground hover:bg-primary/95 shadow-xl shadow-primary/20 hover:shadow-primary/30 transition-all duration-300 flex items-center gap-2.5" 
                   onClick={() => handleNavigateToView("grid")}
                 >
                   <MapPin className="h-5 w-5 animate-pulse" /> Cari Florist

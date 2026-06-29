@@ -1,10 +1,10 @@
 {
-  "projectId": "balmy-aurora-lmln4",
-  "appId": "1:493270833220:web:5a90459c1470ed71b0c411",
-  "apiKey": "AIzaSyBdY6-w3sBhvv9YdYbyUkJ5GcHZrd0yhI0",
-  "authDomain": "balmy-aurora-lmln4.firebaseapp.com",
-  "firestoreDatabaseId": "ai-studio-0e0f1d73-86f1-4d99-aa46-a818a254eb5e",
-  "storageBucket": "balmy-aurora-lmln4.firebasestorage.app",
-  "messagingSenderId": "493270833220",
-  "measurementId": ""
+  "projectId": "titikkembang",
+  "appId": "1:67437762467:web:a7f97e066fd5c03ff0ac16",
+  "apiKey": "AIzaSyDh9Dx6i4s46VNkkllmN2Alkp61MkUOQ_E",
+  "authDomain": "titikkembang.firebaseapp.com",
+  "firestoreDatabaseId": "",
+  "storageBucket": "titikkembang.firebasestorage.app",
+  "messagingSenderId": "67437762467",
+  "measurementId": "G-MC8NCRJY38"
 }

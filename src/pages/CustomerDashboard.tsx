@@ -398,17 +398,17 @@ export default function CustomerDashboard({ onBackToCatalog }: CustomerDashboard
                   </CardTitle>
                   <CardDescription>Pantau status pengerjaan kriya kawat bulu & rute pickup florist Anda secara real-time.</CardDescription>
                 </div>
-                <div className="flex bg-slate-100 p-1 rounded-full border text-xs gap-1 select-none w-max shrink-0 self-start sm:self-auto">
+                <div className="flex bg-slate-100 p-1 rounded-2xl sm:rounded-full border text-xs gap-1 select-none w-full sm:w-auto shrink-0 self-start sm:self-auto flex-col sm:flex-row">
                   <button
                     type="button"
-                    className={`px-4 py-1.5 rounded-full font-bold transition-all text-xs ${buyerOrderTab === "tracking" ? "bg-primary text-white shadow-xs" : "hover:bg-slate-200 text-muted-foreground"}`}
+                    className={`px-4 py-2 sm:py-1.5 rounded-xl sm:rounded-full font-bold transition-all text-xs flex-1 sm:flex-none ${buyerOrderTab === "tracking" ? "bg-primary text-white shadow-xs" : "hover:bg-slate-200 text-muted-foreground"}`}
                     onClick={() => setBuyerOrderTab("tracking")}
                   >
                     Live Tracking 🚚 ({orders.filter(o => o.status !== "Selesai" && o.status !== "Pesanan Selesai").length})
                   </button>
                   <button
                     type="button"
-                    className={`px-4 py-1.5 rounded-full font-bold transition-all text-xs ${buyerOrderTab === "history" ? "bg-primary text-white shadow-xs" : "hover:bg-slate-200 text-muted-foreground"}`}
+                    className={`px-4 py-2 sm:py-1.5 rounded-xl sm:rounded-full font-bold transition-all text-xs flex-1 sm:flex-none ${buyerOrderTab === "history" ? "bg-primary text-white shadow-xs" : "hover:bg-slate-200 text-muted-foreground"}`}
                     onClick={() => setBuyerOrderTab("history")}
                   >
                     Riwayat Selesai 📜 ({orders.filter(o => o.status === "Selesai" || o.status === "Pesanan Selesai").length})
