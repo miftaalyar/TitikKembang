@@ -221,7 +221,7 @@ export default function Header({
               </svg>
             )}
           </div>
-          <span className="font-heading text-base sm:text-lg md:text-xl font-bold tracking-tight text-gray-800 animate-fade-in" id="titikkembang-brand-label">
+          <span className="hidden min-[370px]:inline font-heading text-sm sm:text-lg md:text-xl font-bold tracking-tight text-gray-800 animate-fade-in" id="titikkembang-brand-label">
             {(!webConfig.brandName || webConfig.brandName === "TitikKembang") ? (
               <>Titik<span className="text-primary">Kembang</span></>
             ) : (
@@ -244,7 +244,7 @@ export default function Header({
         </div>
 
         {/* Action Header Column */}
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-1.5 sm:gap-2.5">
           
           {/* Real-time Notification Dropdown */}
           {user && (
@@ -252,11 +252,11 @@ export default function Header({
               <Button
                 variant="outline"
                 size="icon"
-                className="relative rounded-full h-10 w-10 border-primary/25 text-primary hover:bg-primary/5 hover:text-primary transition-all duration-200"
+                className="relative rounded-full h-8 w-8 sm:h-10 sm:w-10 border-primary/25 text-primary hover:bg-primary/5 hover:text-primary transition-all duration-200 shrink-0"
                 onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
                 title="Notifikasi Masuk"
               >
-                <Bell className="h-[18px] w-[18px]" />
+                <Bell className="h-4 w-4 sm:h-[18px] sm:w-[18px]" />
                 {unreadCount > 0 && (
                   <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-black text-white shadow-sm ring-2 ring-background animate-bounce z-10">
                     {unreadCount}
@@ -358,11 +358,11 @@ export default function Header({
             <Button
               variant="outline"
               size="icon"
-              className="relative rounded-full h-10 w-10 border-primary/25 text-primary hover:bg-primary/5 hover:text-primary transition-all duration-200"
+              className="relative rounded-full h-8 w-8 sm:h-10 sm:w-10 border-primary/25 text-primary hover:bg-primary/5 hover:text-primary transition-all duration-200 shrink-0"
               onClick={() => setIsCartOpen(true)}
               title="Keranjang Belanja Saya"
             >
-              <ShoppingBag className="h-[18px] w-[18px]" />
+              <ShoppingBag className="h-4 w-4 sm:h-[18px] sm:w-[18px]" />
               {cartCount > 0 && (
                 <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-black text-white shadow-sm ring-2 ring-background animate-pulse">
                   {cartCount}
@@ -376,11 +376,11 @@ export default function Header({
             <Button
               variant="outline"
               size="icon"
-              className="relative rounded-full h-10 w-10 border-primary/25 text-primary hover:bg-primary/5 hover:text-primary transition-all duration-200"
+              className="relative rounded-full h-8 w-8 sm:h-10 sm:w-10 border-primary/25 text-primary hover:bg-primary/5 hover:text-primary transition-all duration-200 shrink-0"
               onClick={() => onSwitchView?.("profile")}
               title="Profil Buyer Saya (Dashboard)"
             >
-              <UserIcon className="h-[18px] w-[18px]" />
+              <UserIcon className="h-4 w-4 sm:h-[18px] sm:w-[18px]" />
             </Button>
           )}
 
@@ -467,7 +467,7 @@ export default function Header({
               <Button 
                 variant="outline" 
                 size="sm"
-                className="md:hidden rounded-full text-xs h-9 font-bold px-3 border-primary/25 text-primary hover:bg-primary/5 shrink-0" 
+                className="md:hidden rounded-full text-[10px] sm:text-xs h-8 sm:h-9 font-bold px-2 sm:px-3 border-primary/25 text-primary hover:bg-primary/5 shrink-0" 
                 onClick={() => onOpenAuth("login", "customer")}
               >
                 Masuk
@@ -478,10 +478,10 @@ export default function Header({
           <Button 
             variant="ghost" 
             size="icon" 
-            className="md:hidden rounded-full hover:bg-secondary h-10 w-10 flex items-center justify-center shrink-0 border"
+            className="md:hidden rounded-full hover:bg-secondary h-8 w-8 sm:h-10 sm:w-10 flex items-center justify-center shrink-0 border"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
-            <Menu className="h-5 w-5" />
+            <Menu className="h-4 w-4 sm:h-5 sm:w-5" />
           </Button>
         </div>
       </div>

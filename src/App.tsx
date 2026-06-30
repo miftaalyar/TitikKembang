@@ -394,7 +394,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-background font-sans selection:bg-primary/20">
+    <div className="min-h-screen bg-background font-sans selection:bg-primary/20 overflow-x-hidden w-full">
       <Toaster position="top-center" richColors />
       
       {/* Dynamic Running Text Announcement Banner */}

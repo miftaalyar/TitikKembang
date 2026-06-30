@@ -1,8 +1,129 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    
+    // ==========================================
+    // 0. GLOBAL Safety Net & Helper Functions
+    // ==========================================
     match /{document=**} {
-      allow read, write: if true;
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // Helper to check if a user has an admin profile in the users collection
+    function isAdmin() {
+      return isSignedIn() && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin";
+    }
+
+    // ==========================================
+    // 1. Users Collection rules
+    // ==========================================
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && request.auth.uid == userId && request.resource.data.role in ["customer", "florist"];
+      allow update: if isSignedIn() && request.auth.uid == userId && 
+        (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']) || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    // ==========================================
+    // 2. Stores Collection rules
+    // ==========================================
+    match /stores/{storeId} {
+      allow read: if true; // Public access so customers can browse
+      allow create: if isSignedIn() && (request.auth.uid == storeId || request.resource.data.ownerId == request.auth.uid);
+      allow update: if isSignedIn() && (
+        request.auth.uid == storeId || 
+        resource.data.ownerId == request.auth.uid || 
+        isAdmin()
+      );
+      allow delete: if isAdmin();
+    }
+
+    // ==========================================
+    // 3. Products Collection rules
+    // ==========================================
+    match /products/{productId} {
+      allow read: if true; // Public access so customers can view catalog
+      allow create: if isSignedIn() && (
+        request.resource.data.storeId == request.auth.uid || 
+        exists(/databases/$(database)/documents/stores/$(request.auth.uid))
+      );
+      allow update, delete: if isSignedIn() && (
+        resource.data.storeId == request.auth.uid || 
+        exists(/databases/$(database)/documents/stores/$(request.auth.uid)) || 
+        isAdmin()
+      );
+    }
+
+    // ==========================================
+    // 4. Orders Collection rules
+    // ==========================================
+    match /orders/{orderId} {
+      allow read: if isSignedIn() && (
+        resource.data.customerId == request.auth.uid || 
+        resource.data.storeId == request.auth.uid || 
+        isAdmin()
+      );
+      allow create: if isSignedIn() && request.resource.data.customerId == request.auth.uid;
+      allow update: if isSignedIn() && (
+        resource.data.customerId == request.auth.uid || 
+        resource.data.storeId == request.auth.uid || 
+        isAdmin()
+      );
+      allow delete: if isAdmin();
+    }
+
+    // ==========================================
+    // 5. Reviews Collection rules
+    // ==========================================
+    match /reviews/{reviewId} {
+      allow read: if true; // Anyone can read store reviews
+      allow create: if isSignedIn() && request.resource.data.customerId == request.auth.uid;
+      allow update: if isSignedIn() && (resource.data.customerId == request.auth.uid || isAdmin());
+      allow delete: if isSignedIn() && (resource.data.customerId == request.auth.uid || isAdmin());
+    }
+
+    // ==========================================
+    // 6. PromoBanners Collection rules
+    // ==========================================
+    match /promoBanners/{bannerId} {
+      allow read: if true; // Anyone can see active promos
+      allow write: if isAdmin();
+    }
+
+    // ==========================================
+    // 7. Notifications Collection rules
+    // ==========================================
+    match /notifications/{notificationId} {
+      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource.data.userId == request.auth.uid && 
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isRead']);
+      allow delete: if isSignedIn() && resource.data.userId == request.auth.uid;
+    }
+
+    // ==========================================
+    // 8. PremiumPayments Collection rules
+    // ==========================================
+    match /premiumPayments/{paymentId} {
+      allow read: if isSignedIn() && (resource.data.storeId == request.auth.uid || isAdmin());
+      allow create: if isSignedIn() && request.resource.data.storeId == request.auth.uid;
+      allow update: if isSignedIn() && (resource.data.storeId == request.auth.uid || isAdmin());
+      allow delete: if isAdmin();
     }
   }
 }

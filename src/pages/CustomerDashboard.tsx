@@ -37,39 +37,81 @@ import TrackingStepper from "@/src/components/TrackingStepper";
 function compressAndResizeImage(file: File, maxW = 400, maxH = 400): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.readAsDataURL(file);
     reader.onload = (event) => {
       const img = new Image();
-      img.src = event.target?.result as string;
       img.onload = () => {
         const canvas = document.createElement("canvas");
         let width = img.width;
         let height = img.height;
 
+        // Force maximum dimension cap to prevent massive image generation
+        const actualMaxW = Math.min(maxW, 600);
+        const actualMaxH = Math.min(maxH, 600);
+
         if (width > height) {
-          if (width > maxW) {
-            height = Math.round((height * maxW) / width);
-            width = maxW;
+          if (width > actualMaxW) {
+            height = Math.round((height * actualMaxW) / width);
+            width = actualMaxW;
           }
         } else {
-          if (height > maxH) {
-            width = Math.round((width * maxH) / height);
-            height = maxH;
+          if (height > actualMaxH) {
+            width = Math.round((width * actualMaxH) / height);
+            height = actualMaxH;
           }
         }
 
         canvas.width = width;
         canvas.height = height;
         const ctx = canvas.getContext("2d");
-        ctx?.drawImage(img, 0, 0, width, height);
+        if (!ctx) {
+          resolve(event.target?.result as string);
+          return;
+        }
+
+        ctx.drawImage(img, 0, 0, width, height);
         
-        // Output as compact JPEG data URL (quality 0.7)
-        const compressedBase64 = canvas.toDataURL("image/jpeg", 0.7);
-        resolve(compressedBase64);
+        // Use quality 0.55 by default for an excellent balance of size and visual fidelity
+        let quality = 0.55;
+        let dataUrl = canvas.toDataURL("image/jpeg", quality);
+        
+        // If the resulting Base64 string length exceeds ~120KB (approx 160,000 chars),
+        // we scale down the quality and/or resolution aggressively to keep it lightweight.
+        if (dataUrl.length > 160000) {
+          quality = 0.45;
+          dataUrl = canvas.toDataURL("image/jpeg", quality);
+        }
+        
+        // If still over 120KB, scale down resolution by 30% more
+        if (dataUrl.length > 160000) {
+          const shrinkCanvas = document.createElement("canvas");
+          shrinkCanvas.width = Math.round(width * 0.7);
+          shrinkCanvas.height = Math.round(height * 0.7);
+          const sCtx = shrinkCanvas.getContext("2d");
+          if (sCtx) {
+            sCtx.drawImage(canvas, 0, 0, shrinkCanvas.width, shrinkCanvas.height);
+            dataUrl = shrinkCanvas.toDataURL("image/jpeg", 0.4);
+          }
+        }
+        
+        // Final fallback if somehow it is still massive: scale down to thumbnail dimensions
+        if (dataUrl.length > 300000) {
+          const thumbCanvas = document.createElement("canvas");
+          thumbCanvas.width = 180;
+          thumbCanvas.height = Math.round((height * 180) / width);
+          const tCtx = thumbCanvas.getContext("2d");
+          if (tCtx) {
+            tCtx.drawImage(canvas, 0, 0, thumbCanvas.width, thumbCanvas.height);
+            dataUrl = thumbCanvas.toDataURL("image/jpeg", 0.35);
+          }
+        }
+
+        resolve(dataUrl);
       };
-      img.onerror = (err) => reject(err);
+      img.onerror = () => reject(new Error("Format gambar rusak atau tidak didukung."));
+      img.src = event.target?.result as string;
     };
-    reader.onerror = (err) => reject(err);
+    reader.onerror = () => reject(new Error("Gagal membaca file gambar."));
+    reader.readAsDataURL(file);
   });
 }
 

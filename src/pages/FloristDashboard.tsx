@@ -102,7 +102,7 @@ const PATTERN_PRESETS = [
 ];
 
 
-function compressAndResizeImage(file: File, maxW = 800, maxH = 800): Promise<string> {
+function compressAndResizeImage(file: File, maxW = 600, maxH = 600): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = (event) => {
@@ -112,15 +112,19 @@ function compressAndResizeImage(file: File, maxW = 800, maxH = 800): Promise<str
         let width = img.width;
         let height = img.height;
 
+        // Force maximum dimension cap to prevent massive image generation
+        const actualMaxW = Math.min(maxW, 800);
+        const actualMaxH = Math.min(maxH, 800);
+
         if (width > height) {
-          if (width > maxW) {
-            height = Math.round((height * maxW) / width);
-            width = maxW;
+          if (width > actualMaxW) {
+            height = Math.round((height * actualMaxW) / width);
+            width = actualMaxW;
           }
         } else {
-          if (height > maxH) {
-            width = Math.round((width * maxH) / height);
-            height = maxH;
+          if (height > actualMaxH) {
+            width = Math.round((width * actualMaxH) / height);
+            height = actualMaxH;
           }
         }
 
@@ -133,7 +137,42 @@ function compressAndResizeImage(file: File, maxW = 800, maxH = 800): Promise<str
         }
 
         ctx.drawImage(img, 0, 0, width, height);
-        const dataUrl = canvas.toDataURL("image/jpeg", 0.75);
+        
+        // Use quality 0.55 by default for an excellent balance of size and visual fidelity
+        let quality = 0.55;
+        let dataUrl = canvas.toDataURL("image/jpeg", quality);
+        
+        // If the resulting Base64 string length exceeds ~120KB (approx 160,000 chars),
+        // we scale down the quality and/or resolution aggressively to keep it lightweight.
+        if (dataUrl.length > 160000) {
+          quality = 0.45;
+          dataUrl = canvas.toDataURL("image/jpeg", quality);
+        }
+        
+        // If still over 120KB, scale down resolution by 30% more
+        if (dataUrl.length > 160000) {
+          const shrinkCanvas = document.createElement("canvas");
+          shrinkCanvas.width = Math.round(width * 0.7);
+          shrinkCanvas.height = Math.round(height * 0.7);
+          const sCtx = shrinkCanvas.getContext("2d");
+          if (sCtx) {
+            sCtx.drawImage(canvas, 0, 0, shrinkCanvas.width, shrinkCanvas.height);
+            dataUrl = shrinkCanvas.toDataURL("image/jpeg", 0.4);
+          }
+        }
+        
+        // Final fallback if somehow it is still massive: scale down to thumbnail dimensions
+        if (dataUrl.length > 300000) {
+          const thumbCanvas = document.createElement("canvas");
+          thumbCanvas.width = 180;
+          thumbCanvas.height = Math.round((height * 180) / width);
+          const tCtx = thumbCanvas.getContext("2d");
+          if (tCtx) {
+            tCtx.drawImage(canvas, 0, 0, thumbCanvas.width, thumbCanvas.height);
+            dataUrl = thumbCanvas.toDataURL("image/jpeg", 0.35);
+          }
+        }
+
         resolve(dataUrl);
       };
       img.onerror = () => reject(new Error("Format gambar rusak atau tidak didukung."));
@@ -289,6 +328,11 @@ export default function FloristDashboard() {
     const user = auth.currentUser;
     if (!user) return;
     
+    // Prevent background auto-refresh from running and overwriting registration form fields if store does not exist yet
+    if (silent && !storeExists) {
+      return;
+    }
+    
     if (!silent) {
       setIsRefreshing(true);
     }
@@ -372,17 +416,51 @@ export default function FloristDashboard() {
         setStoreExists(false);
         setOrders([]);
         setProducts([]);
-        setStoreInfo({
-          id: user.uid,
-          name: "",
-          description: "",
-          owner: user.displayName || "",
-          email: user.email || "",
-          location: { lat: -6.2088, lng: 106.8456, address: "" },
-          operatingHours: "08:00 - 20:00",
-          rating: 4.5,
-          reviewCount: 0,
-          isVerified: false
+        setStoreInfo((prev: any) => {
+          // If the form has already been populated with some values by the user, preserve them!
+          if (prev && (prev.name || prev.phone || prev.description || prev.location?.address || prev.verificationImage)) {
+            return prev;
+          }
+
+          // Try to load any previously saved draft to avoid user typing loss
+          try {
+            const draftKey = `cached-florist-registration-draft-${user.uid}`;
+            const draftStr = localStorage.getItem(draftKey);
+            if (draftStr) {
+              const draftObj = JSON.parse(draftStr);
+              if (draftObj && typeof draftObj === "object") {
+                return {
+                  id: user.uid,
+                  name: draftObj.name || "",
+                  owner: draftObj.owner || user.displayName || "",
+                  email: user.email || "",
+                  phone: draftObj.phone || "",
+                  description: draftObj.description || "",
+                  location: draftObj.location || { lat: -6.2088, lng: 106.8456, address: "" },
+                  operatingHours: draftObj.operatingHours || "08:00 - 20:00",
+                  rating: 4.5,
+                  reviewCount: 0,
+                  isVerified: false,
+                  verificationImage: draftObj.verificationImage || ""
+                };
+              }
+            }
+          } catch (draftErr) {
+            console.warn("Failed to retrieve florist registration draft:", draftErr);
+          }
+
+          return {
+            id: user.uid,
+            name: "",
+            description: "",
+            owner: user.displayName || "",
+            email: user.email || "",
+            location: { lat: -6.2088, lng: 106.8456, address: "" },
+            operatingHours: "08:00 - 20:00",
+            rating: 4.5,
+            reviewCount: 0,
+            isVerified: false
+          };
         });
       }
       setLastUpdated(new Date());
@@ -405,6 +483,19 @@ export default function FloristDashboard() {
     return () => unsubscribe();
   }, []);
 
+  // Save registration form draft to localStorage whenever it changes (if store doesn't exist yet)
+  useEffect(() => {
+    const user = auth.currentUser;
+    if (user && !storeExists && storeInfo) {
+      const draftKey = `cached-florist-registration-draft-${user.uid}`;
+      try {
+        localStorage.setItem(draftKey, JSON.stringify(storeInfo));
+      } catch (err) {
+        console.warn("Failed to write registration draft to cache", err);
+      }
+    }
+  }, [storeInfo, storeExists]);
+
   // Checkout Countdown Timer Effect
   useEffect(() => {
     let interval: any;
@@ -426,7 +517,7 @@ export default function FloristDashboard() {
   // Seller auto-refresh countdown effect
   useEffect(() => {
     let timer: any;
-    if (isAutoRefreshActive) {
+    if (isAutoRefreshActive && storeExists) {
       timer = setInterval(() => {
         setCountdown((prev) => {
           if (prev <= 1) {
@@ -438,7 +529,7 @@ export default function FloristDashboard() {
       }, 1000);
     }
     return () => clearInterval(timer);
-  }, [isAutoRefreshActive, autoRefreshSecs, orders]);
+  }, [isAutoRefreshActive, autoRefreshSecs, orders, storeExists]);
 
   // Reset countdown if settings change
   useEffect(() => {
@@ -695,30 +786,54 @@ export default function FloristDashboard() {
     try {
       const imgUrl = storeInfo.verificationImage;
       const registrationData = {
-        ...storeInfo,
         id: user.uid,
+        name: storeInfo.name || "",
+        owner: storeInfo.owner || user.displayName || "",
         email: user.email || "",
+        phone: storeInfo.phone || "",
+        description: storeInfo.description || "",
+        location: {
+          address: storeInfo.location?.address || "",
+          gmapLink: storeInfo.location?.gmapLink || "",
+          lat: storeInfo.location?.lat ?? -6.2088,
+          lng: storeInfo.location?.lng ?? 106.8456
+        },
+        operatingHours: storeInfo.operatingHours || "08:00 - 20:00",
+        rating: 4.5,
+        reviewCount: 0,
         isVerified: false,
         appliedAt: new Date().toLocaleDateString("id-ID", {
           day: "numeric",
           month: "long",
           year: "numeric"
         }) + " pukul " + new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }),
-        portfolio: [imgUrl]
+        portfolio: [imgUrl],
+        verificationImage: imgUrl
       };
+
       await updateStoreProfile(user.uid, registrationData);
+
+      // Clean up local draft cache upon successful registration
+      try {
+        const draftKey = `cached-florist-registration-draft-${user.uid}`;
+        localStorage.removeItem(draftKey);
+      } catch (cacheErr) {
+        console.warn("Could not delete registration draft:", cacheErr);
+      }
+
       try {
         await updateUserProfile(user.uid, { role: "florist" });
         window.dispatchEvent(new CustomEvent("role-updated", { detail: "florist" }));
       } catch (roleErr) {
         console.warn("Failed to update user profile role:", roleErr);
       }
+
       setStoreInfo(registrationData);
       setStoreExists(true);
       toast.success("Pendaftaran dikirim! Tunggu persetujuan dari Admin.");
     } catch (err) {
-      console.error(err);
-      toast.error("Gagal mengirim berkas kemitraan.");
+      console.error("Failed to register store in Firestore:", err);
+      toast.error("Gagal mengirim berkas kemitraan. Mohon periksa koneksi Anda.");
     } finally {
       setIsRegistering(false);
     }
@@ -905,10 +1020,18 @@ export default function FloristDashboard() {
                     id="regAddress" 
                     className="pl-9 rounded-xl h-11 bg-secondary/30"
                     value={storeInfo?.location?.address || ""} 
-                    onChange={(e) => setStoreInfo({ 
-                      ...storeInfo, 
-                      location: { ...storeInfo.location, address: e.target.value } 
-                    })}
+                    onChange={(e) => {
+                      const prevLoc = storeInfo?.location || {};
+                      setStoreInfo({ 
+                        ...storeInfo, 
+                        location: { 
+                          lat: prevLoc.lat ?? -6.2088,
+                          lng: prevLoc.lng ?? 106.8456,
+                          gmapLink: prevLoc.gmapLink || "",
+                          address: e.target.value 
+                        } 
+                      });
+                    }}
                     placeholder="Jl. Menteng Raya No. 15, Jakarta Pusat"
                     required
                   />
@@ -934,34 +1057,35 @@ export default function FloristDashboard() {
                   </Label>
                   <Input 
                     id="regGmapLink" 
-                    type="url"
+                    type="text"
                     placeholder="Contoh: https://maps.app.goo.gl/... atau https://google.com/maps/place/..."
                     className="rounded-xl h-11 bg-secondary/30 text-xs sm:text-sm"
                     value={storeInfo?.location?.gmapLink || ""} 
                     onChange={(e) => {
                       const val = e.target.value;
                       const parsed = parseGMapLink(val);
+                      const prevLoc = storeInfo?.location || {};
                       if (parsed) {
                         setStoreInfo({
                           ...storeInfo,
                           location: {
-                            ...storeInfo.location,
-                            gmapLink: val,
                             lat: parsed.lat,
-                            lng: parsed.lng
+                            lng: parsed.lng,
+                            gmapLink: val,
+                            address: prevLoc.address || ""
                           }
                         });
                       } else {
                         // Set standard Jakarta location as fallback coordinates but preserve Google Maps URL
-                        const defaultLat = storeInfo?.location?.lat || -6.2088;
-                        const defaultLng = storeInfo?.location?.lng || 106.8456;
+                        const defaultLat = prevLoc.lat ?? -6.2088;
+                        const defaultLng = prevLoc.lng ?? 106.8456;
                         setStoreInfo({
                           ...storeInfo,
                           location: {
-                            ...storeInfo.location,
-                            gmapLink: val,
                             lat: defaultLat,
-                            lng: defaultLng
+                            lng: defaultLng,
+                            gmapLink: val,
+                            address: prevLoc.address || ""
                           }
                         });
                       }
