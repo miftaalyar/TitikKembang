@@ -20,7 +20,8 @@ import {
   Camera,
   Heart,
   Loader2,
-  Star
+  Star,
+  RefreshCw
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -188,6 +189,54 @@ export default function CustomerDashboard({ onBackToCatalog }: CustomerDashboard
 
   useEffect(() => {
     loadProfileAndData();
+  }, []);
+
+  // State to track manual/auto background order updates
+  const [isRefreshingOrders, setIsRefreshingOrders] = useState(false);
+
+  // Manual/Auto Refresh orders from Firestore
+  async function handleRefreshOrders(showToast = false) {
+    const currentUser = auth.currentUser;
+    if (!currentUser) return;
+    if (showToast) setIsRefreshingOrders(true);
+    try {
+      const fetchedOrders = await fetchBuyerOrders(currentUser.uid);
+      const sorted = fetchedOrders.sort((a: any, b: any) => {
+        const timeA = a.createdAt?.seconds ? a.createdAt.seconds : new Date(a.createdAt || 0).getTime() / 1000;
+        const timeB = b.createdAt?.seconds ? b.createdAt.seconds : new Date(b.createdAt || 0).getTime() / 1000;
+        return timeB - timeA;
+      });
+      setOrders(sorted);
+      const cacheOrdersKey = `cached-customer-orders-${currentUser.uid}`;
+      localStorage.setItem(cacheOrdersKey, JSON.stringify(sorted));
+      
+      const unreviewed = fetchedOrders.filter((ord: any) => 
+        (ord.status === "Pesanan Selesai" || ord.status === "Selesai") && !ord.hasReviewed
+      );
+      setUnreviewedOrdersList(unreviewed);
+      if (showToast) {
+        toast.success("Pelacakan pesanan berhasil diperbarui secara manual! 🔄");
+      }
+    } catch (err) {
+      console.error("Gagal memperbarui data pesanan:", err);
+      if (showToast) {
+        toast.error("Gagal memperbarui pelacakan pesanan.");
+      }
+    } finally {
+      if (showToast) setIsRefreshingOrders(false);
+    }
+  }
+
+  // Automatic live update interval (runs every 15 seconds for active order tracking)
+  useEffect(() => {
+    const currentUser = auth.currentUser;
+    if (!currentUser) return;
+
+    const interval = setInterval(() => {
+      handleRefreshOrders(false);
+    }, 15000); // 15 seconds interval for ultra-live experience
+
+    return () => clearInterval(interval);
   }, []);
 
   async function loadProfileAndData() {
@@ -464,11 +513,29 @@ export default function CustomerDashboard({ onBackToCatalog }: CustomerDashboard
           <Card className="rounded-3xl border border-muted/50 overflow-hidden bg-card/45 shadow-sm">
             <CardHeader className="pb-4">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                  <CardTitle className="font-heading text-lg sm:text-xl font-bold flex items-center gap-2">
-                    <ShoppingBag className="h-5 w-5 text-primary" /> Dashboard Tracking Pesanan Saya 🚚
-                  </CardTitle>
-                  <CardDescription>Pantau status pengerjaan kriya kawat bulu & rute pickup florist Anda secara real-time.</CardDescription>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <CardTitle className="font-heading text-lg sm:text-xl font-bold flex items-center gap-2">
+                      <ShoppingBag className="h-5 w-5 text-primary" /> Dashboard Tracking Pesanan Saya 🚚
+                    </CardTitle>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleRefreshOrders(true)}
+                      disabled={isRefreshingOrders}
+                      className="rounded-full h-8 w-8 hover:bg-slate-100 text-muted-foreground hover:text-primary transition-all shrink-0"
+                      title="Perbarui Pelacakan"
+                    >
+                      <RefreshCw className={`h-3.5 w-3.5 ${isRefreshingOrders ? "animate-spin text-primary" : ""}`} />
+                    </Button>
+                  </div>
+                  <CardDescription className="flex items-center gap-1.5 mt-1 flex-wrap">
+                    <span>Pantau status pengerjaan kriya kawat bulu & rute pickup florist Anda secara real-time.</span>
+                    <span className="inline-flex items-center gap-1 text-[10px] text-green-600 bg-green-55/10 bg-green-50 px-2 py-0.5 rounded-full font-bold">
+                      <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-ping" />
+                      <span>Auto-sync aktif</span>
+                    </span>
+                  </CardDescription>
                 </div>
                 <div className="flex bg-slate-100 p-1 rounded-2xl sm:rounded-full border text-xs gap-1 select-none w-full sm:w-auto shrink-0 self-start sm:self-auto flex-col sm:flex-row">
                   <button

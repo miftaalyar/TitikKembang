@@ -44,7 +44,9 @@ import {
   Bell,
   Volume2,
   Play,
-  Pause
+  Pause,
+  Menu,
+  MessageCircle
 } from "lucide-react";
 import { fetchOrders, updateOrderStatus, fetchProducts, getStore, updateStoreProfile, deleteProduct, fetchAdPackages, updateProduct, submitPremiumPayment, fetchStorePremiumPayments, updateUserProfile } from "@/src/lib/dataService";
 import TrackingStepper from "@/src/components/TrackingStepper";
@@ -281,6 +283,10 @@ export default function FloristDashboard() {
   const [proofImageName, setProofImageName] = useState<string>("");
   const [isSubmittingProof, setIsSubmittingProof] = useState<boolean>(false);
   const [pendingPayments, setPendingPayments] = useState<any[]>([]);
+
+  // Sidebar & Navigation states for layout
+  const [activeTab, setActiveTab] = useState("active");
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // Seller Auto-refresh & Notification States
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -1394,7 +1400,16 @@ export default function FloristDashboard() {
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <div className="flex items-center gap-3">
-            <h2 className="font-heading text-3xl font-bold">Seller Dashboard</h2>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setIsSidebarOpen(true)}
+              className="lg:hidden rounded-full h-9 w-9 border-primary/20 text-primary shrink-0"
+              title="Buka Menu"
+            >
+              <Menu size={16} />
+            </Button>
+            <h2 className="font-heading text-2xl sm:text-3xl font-bold">Seller Dashboard</h2>
             {storeInfo?.isClosed ? (
               <Badge variant="destructive" className="rounded-full font-bold px-3 py-1 bg-red-600 animate-pulse text-[10px] sm:text-xs">
                 🔴 TOKO TUTUP
@@ -1472,7 +1487,7 @@ export default function FloristDashboard() {
         <Card className="rounded-3xl border-none bg-primary/5 shadow-none">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Kanal Hubungan</CardTitle>
-            <Smartphone className="h-4 w-4 text-green-600 animate-pulse" />
+            <MessageCircle className="h-4 w-4 text-green-600 animate-pulse fill-green-600/10" />
           </CardHeader>
           <CardContent>
             <div className="text-lg font-bold truncate">{storeInfo?.phone || "Belum Atur WA"}</div>
@@ -1481,20 +1496,114 @@ export default function FloristDashboard() {
         </Card>
       </div>
 
-      <Tabs defaultValue="active" className="w-full">
-        <TabsList className="rounded-full bg-secondary/50 p-1 flex-wrap h-auto inline-flex">
-          <TabsTrigger value="active" className="rounded-full px-6 text-xs sm:text-sm">Pesanan Aktif</TabsTrigger>
-          <TabsTrigger value="history" className="rounded-full px-6 text-xs sm:text-sm">Riwayat</TabsTrigger>
-          <TabsTrigger value="inventory" className="rounded-full px-6 text-xs sm:text-sm">Inventaris</TabsTrigger>
-          <TabsTrigger value="ads" className="rounded-full px-6 text-xs sm:text-sm flex items-center gap-1.5">
-            <Zap className="h-3.5 w-3.5 text-amber-500 animate-pulse" /> Iklan & Premium
-          </TabsTrigger>
-          <TabsTrigger value="settings" className="rounded-full px-6 text-xs sm:text-sm">
-            <Settings className="mr-2 h-4 w-4" /> Profil Toko
-          </TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="active" className="mt-6">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        {/* Backdrop for mobile sidebar drawer */}
+        {isSidebarOpen && (
+          <div 
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[80] lg:hidden transition-opacity duration-300"
+            onClick={() => setIsSidebarOpen(false)}
+          />
+        )}
+
+        <div className="grid grid-cols-12 gap-6 items-start relative mt-6">
+          {/* Sidebar Navigation Panel - persistent on desktop, drawer on mobile */}
+          <div className={`
+            col-span-12 lg:col-span-3 
+            fixed inset-y-0 left-0 z-[90] w-72 bg-card p-6 border-r border-secondary/50 shadow-2xl lg:shadow-none
+            lg:relative lg:inset-auto lg:z-auto lg:w-auto lg:bg-transparent lg:p-0 lg:border-none
+            transform transition-transform duration-300 ease-in-out h-full lg:h-auto
+            ${isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
+          `}>
+            <Card className="rounded-3xl border border-secondary/50 bg-card/65 backdrop-blur-md p-4 lg:p-5 h-full lg:sticky lg:top-6 flex flex-col justify-between shadow-sm">
+              <div className="space-y-6">
+                {/* Sidebar Header */}
+                <div className="flex items-center justify-between lg:justify-start gap-3 border-b border-secondary/60 pb-4">
+                  <div className="flex items-center gap-2.5">
+                    <div className="p-2 bg-primary text-primary-foreground rounded-xl shadow-md">
+                      <StoreIcon className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <h3 className="font-heading font-bold text-sm text-primary leading-none">Florist Panel</h3>
+                      <p className="text-[10px] text-muted-foreground mt-1">Kelola Toko & Paket</p>
+                    </div>
+                  </div>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    onClick={() => setIsSidebarOpen(false)}
+                    className="lg:hidden rounded-full h-8 w-8 text-muted-foreground hover:bg-secondary"
+                  >
+                    <X size={16} />
+                  </Button>
+                </div>
+
+                {/* Navigation triggers list inside customized TabsList */}
+                <div className="space-y-1.5">
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider pl-3 block mb-2">Menu Navigasi</span>
+                  
+                  <TabsList className="flex flex-col gap-1 bg-transparent h-auto w-full p-0 border-none items-stretch">
+                    <TabsTrigger 
+                      value="active" 
+                      onClick={() => setIsSidebarOpen(false)}
+                      className="w-full justify-start rounded-xl px-4 py-2.5 text-xs font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-muted-foreground hover:bg-secondary/40 hover:text-primary transition-all text-left flex items-center gap-2 border-none"
+                    >
+                      <Package className="h-4 w-4" />
+                      <span>Pesanan Aktif</span>
+                      <span className="ml-auto bg-primary/10 text-primary group-data-[state=active]:bg-white/20 group-data-[state=active]:text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                        {orders.filter(o => o.status !== "Selesai" && o.status !== "Pesanan Selesai").length}
+                      </span>
+                    </TabsTrigger>
+                    
+                    <TabsTrigger 
+                      value="history" 
+                      onClick={() => setIsSidebarOpen(false)}
+                      className="w-full justify-start rounded-xl px-4 py-2.5 text-xs font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-muted-foreground hover:bg-secondary/40 hover:text-primary transition-all text-left flex items-center gap-2 border-none"
+                    >
+                      <Clock className="h-4 w-4" />
+                      <span>Riwayat Selesai</span>
+                      <span className="ml-auto bg-slate-100 text-slate-600 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                        {orders.filter(o => o.status === "Selesai" || o.status === "Pesanan Selesai").length}
+                      </span>
+                    </TabsTrigger>
+                    
+                    <TabsTrigger 
+                      value="inventory" 
+                      onClick={() => setIsSidebarOpen(false)}
+                      className="w-full justify-start rounded-xl px-4 py-2.5 text-xs font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-muted-foreground hover:bg-secondary/40 hover:text-primary transition-all text-left flex items-center gap-2 border-none"
+                    >
+                      <Package className="h-4 w-4" />
+                      <span>Inventaris Katalog</span>
+                      <span className="ml-auto bg-slate-100 text-slate-600 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                        {products.length}
+                      </span>
+                    </TabsTrigger>
+                    
+                    <TabsTrigger 
+                      value="ads" 
+                      onClick={() => setIsSidebarOpen(false)}
+                      className="w-full justify-start rounded-xl px-4 py-2.5 text-xs font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-muted-foreground hover:bg-secondary/40 hover:text-primary transition-all text-left flex items-center gap-2 border-none"
+                    >
+                      <Zap className="h-4 w-4 text-amber-500 fill-amber-500/10" />
+                      <span>Iklan & Premium</span>
+                    </TabsTrigger>
+                    
+                    <TabsTrigger 
+                      value="settings" 
+                      onClick={() => setIsSidebarOpen(false)}
+                      className="w-full justify-start rounded-xl px-4 py-2.5 text-xs font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-muted-foreground hover:bg-secondary/40 hover:text-primary transition-all text-left flex items-center gap-2 border-none"
+                    >
+                      <Settings className="h-4 w-4" />
+                      <span>Profil Toko</span>
+                    </TabsTrigger>
+                  </TabsList>
+                </div>
+              </div>
+            </Card>
+          </div>
+
+          {/* Right Panel - Content Area */}
+          <div className="col-span-12 lg:col-span-9 space-y-6">
+            <TabsContent value="active" className="mt-0">
           <div className="grid gap-4">
             {orders.filter(o => o.status !== "Selesai").map((order) => (
               <Card key={order.id} className="overflow-hidden rounded-3xl border-none bg-card shadow-sm transition-all hover:shadow-md">
@@ -2868,6 +2977,8 @@ export default function FloristDashboard() {
 
           </div>
         </TabsContent>
+        </div> {/* col-span-12 lg:col-span-9 space-y-6 */}
+        </div> {/* grid grid-cols-12 gap-6 */}
       </Tabs>
 
       <ProductUploadModal 
