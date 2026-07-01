@@ -106,7 +106,7 @@ export default function PromoSlider({ onSelectCategory, onSwitchView, refreshTri
   return (
     <div id="promo-banner-slider" className="relative w-full overflow-hidden rounded-3xl border border-muted/20 bg-gradient-to-r from-primary/5 via-transparent to-primary/5 shadow-sm group">
       {/* Slider main body */}
-      <div className="relative h-44 sm:h-52 md:h-60 lg:h-[220px] w-full flex items-center justify-center">
+      <div className="relative h-32 sm:h-48 md:h-56 lg:h-[220px] w-full flex items-center justify-center">
         <AnimatePresence initial={false} custom={direction} mode="wait">
           <motion.div
             key={currentIndex}
@@ -157,18 +157,9 @@ export default function PromoSlider({ onSelectCategory, onSwitchView, refreshTri
 
             {/* Banner Text overlay */}
             {(activeBanner.title || activeBanner.description) && (
-              <div className="relative z-20 xl:max-w-3xl lg:max-w-2xl md:max-w-xl max-w-full p-6 md:p-10 text-white flex flex-col justify-center h-full select-none text-left bg-transparent">
-                <div className="inline-flex items-center gap-1.5 bg-primary/20 backdrop-blur-md px-3 py-1 rounded-full text-[10px] md:text-xs font-semibold text-amber-305 w-fit mb-2 md:mb-3 border border-primary/20">
-                  <Sparkles className="h-3 w-3 text-amber-400" />
-                  <span>IKLAN PENAWARAN</span>
-                </div>
-                {activeBanner.title && (
-                  <h3 className="font-heading text-xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold tracking-tight leading-tight text-white drop-shadow-md">
-                    {activeBanner.title}
-                  </h3>
-                )}
+              <div className="relative z-20 xl:max-w-3xl lg:max-w-2xl md:max-w-xl max-w-full p-4 sm:p-6 md:p-10 text-white flex flex-col justify-center h-full select-none text-left bg-transparent">
                 {activeBanner.description && (
-                  <p className="mt-2 text-xs sm:text-sm md:text-base text-white/90 font-medium max-w-xl drop-shadow-sm line-clamp-2">
+                  <p className="mt-1 sm:mt-2 text-xs sm:text-sm md:text-base text-white/90 font-medium max-w-xl drop-shadow-sm line-clamp-2">
                     {activeBanner.description}
                   </p>
                 )}
