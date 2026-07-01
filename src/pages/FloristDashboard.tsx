@@ -1594,7 +1594,7 @@ export default function FloristDashboard() {
         </Card>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} orientation="vertical" className="w-full">
         {/* Backdrop for mobile sidebar drawer */}
         {isSidebarOpen && (
           <div 

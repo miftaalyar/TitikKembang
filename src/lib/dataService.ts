@@ -236,61 +236,67 @@ export async function deleteProduct(productId: string) {
 }
 
 export async function fetchAdPackages() {
+  const defaultPkgs = [
+    {
+      name: "Paket Weekend 3 Hari (Jumat-Minggu)",
+      price: 15000,
+      duration: "3 Hari",
+      benefits: [
+        "Hanya aktif hari Jumat s/d Minggu",
+        "Tampil di halaman pencarian premium weekend",
+        "Sangat pas untuk promo kilat akhir pekan"
+      ]
+    },
+    {
+      name: "Paket Seminggu Eksklusif (7 Hari)",
+      price: 35000,
+      duration: "7 Hari",
+      benefits: [
+        "Eksklusif penuh selama 7 hari penuh (24/7)",
+        "Sorotan utama di feeds aplikasi luar",
+        "Lencana perunggu penjual populer"
+      ]
+    },
+    {
+      name: "Paket Sebulan Juara (30 Hari)",
+      price: 120000,
+      duration: "30 Hari",
+      benefits: [
+        "Promosi non-stop penuh selama 30 hari",
+        "Boosting prioritas paling atas di seluruh pencarian",
+        "Lencana emas premium mitra terpercaya"
+      ]
+    }
+  ];
+
   try {
     const snap = await getDocs(collection(db, "adPackages"));
     const list = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     
     if (list.length === 0) {
-      // Auto-seed the 3 requested packages
-      const defaultPkgs = [
-        {
-          name: "Paket Weekend 3 Hari (Jumat-Minggu)",
-          price: 15000,
-          duration: "3 Hari",
-          benefits: [
-            "Hanya aktif hari Jumat s/d Minggu",
-            "Tampil di halaman pencarian premium weekend",
-            "Sangat pas untuk promo kilat akhir pekan"
-          ]
-        },
-        {
-          name: "Paket Seminggu Eksklusif (7 Hari)",
-          price: 35000,
-          duration: "7 Hari",
-          benefits: [
-            "Eksklusif penuh selama 7 hari penuh (24/7)",
-            "Sorotan utama di feeds aplikasi luar",
-            "Lencana perunggu penjual populer"
-          ]
-        },
-        {
-          name: "Paket Sebulan Juara (30 Hari)",
-          price: 120000,
-          duration: "30 Hari",
-          benefits: [
-            "Promosi non-stop penuh selama 30 hari",
-            "Boosting prioritas paling atas di seluruh pencarian",
-            "Lencana emas premium mitra terpercaya"
-          ]
-        }
-      ];
-      
       const seeded: any[] = [];
       const adPackagesRef = collection(db, "adPackages");
       for (const p of defaultPkgs) {
-        const docRef = await addDoc(adPackagesRef, {
-          ...p,
-          createdAt: serverTimestamp()
-        });
-        seeded.push({ id: docRef.id, ...p });
+        try {
+          const docRef = await addDoc(adPackagesRef, {
+            ...p,
+            createdAt: serverTimestamp()
+          });
+          seeded.push({ id: docRef.id, ...p });
+        } catch (writeErr) {
+          console.warn("Failed to write seed package in database (likely non-admin), using inline fallback:", writeErr);
+          // If we can't write, still return the package with a unique deterministic/generated ID
+          const fallbackId = "seed-" + p.name.toLowerCase().replace(/[^a-z0-9]/g, "-");
+          seeded.push({ id: fallbackId, ...p });
+        }
       }
       return seeded;
     }
     
     return list;
   } catch (e) {
-    console.warn("Error fetching ad packages:", e);
-    return [];
+    console.warn("Error fetching ad packages from database, returning default inline list:", e);
+    return defaultPkgs.map((p, idx) => ({ id: `offline-seed-${idx}`, ...p }));
   }
 }
 
