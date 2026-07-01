@@ -138,6 +138,27 @@
         "rejectReason": { "type": "string" }
       },
       "required": ["storeId", "storeName", "packageId", "packageName", "price", "proofImage", "status", "adType"]
+    },
+    "WebConfig": {
+      "title": "WebConfig",
+      "description": "General website profile & settings configuration",
+      "type": "object",
+      "properties": {
+        "brandName": { "type": "string" },
+        "slogan": { "type": "string" },
+        "csPhone": { "type": "string" },
+        "runningText": { "type": "string" },
+        "promoText": { "type": "string" },
+        "emailVisible": { "type": "string" },
+        "isMaintenance": { "type": "boolean" },
+        "logoType": { "type": "string" },
+        "logoUrl": { "type": "string" },
+        "logoBgColor": { "type": "string" },
+        "logoTextColor": { "type": "string" },
+        "qrisMerchantName": { "type": "string" },
+        "qrisNmid": { "type": "string" },
+        "qrisImageUrl": { "type": "string" }
+      }
     }
   },
   "firestore": {
@@ -172,6 +193,10 @@
     "premiumPayments/{paymentId}": {
       "schema": "PremiumPayment",
       "description": "Sponsor premium/ads payment requests"
+    },
+    "webSettings/{settingId}": {
+      "schema": "WebConfig",
+      "description": "Website general configuration document"
     }
   }
 }
