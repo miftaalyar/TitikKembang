@@ -3,6 +3,61 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+import L from "leaflet";
+// @ts-ignore
+import markerIcon from "leaflet/dist/images/marker-icon.png";
+// @ts-ignore
+import markerShadow from "leaflet/dist/images/marker-shadow.png";
+
+const DefaultIcon = L.icon({
+  iconUrl: markerIcon,
+  shadowUrl: markerShadow,
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41],
+});
+
+function MapPinPicker({ 
+  lat, 
+  lng, 
+  onChange 
+}: { 
+  lat: number; 
+  lng: number; 
+  onChange: (lat: number, lng: number) => void; 
+}) {
+  const map = useMap();
+  
+  // Track center coordinates to pan the map dynamically if values are updated externally
+  useEffect(() => {
+    map.setView([lat, lng], map.getZoom());
+  }, [lat, lng, map]);
+
+  useMapEvents({
+    click(e) {
+      onChange(e.latlng.lat, e.latlng.lng);
+    },
+  });
+
+  return (
+    <Marker 
+      position={[lat, lng]} 
+      icon={DefaultIcon} 
+      draggable={true}
+      eventHandlers={{
+        dragend: (e) => {
+          const marker = e.target;
+          const position = marker.getLatLng();
+          onChange(position.lat, position.lng);
+        }
+      }}
+    />
+  );
+}
+
 import { 
   Package, 
   Clock, 
@@ -1044,6 +1099,49 @@ export default function FloristDashboard() {
                 </div>
               </div>
 
+              {/* Interactive map drop-pin selection on registration */}
+              <div className="space-y-3 p-4 bg-secondary/15 rounded-3xl border border-secondary/30">
+                <Label className="flex items-center gap-1.5 text-foreground font-bold text-xs uppercase tracking-wide">
+                  <MapIcon className="h-4 w-4 text-primary" />
+                  <span>Drop Pin Lokasi Toko Anda di Peta 📍</span>
+                </Label>
+                <p className="text-[11px] text-muted-foreground leading-relaxed">
+                  Geser peta dan klik/ketuk lokasi persis toko atau rumah Anda untuk meletakkan drop pin. Anda juga dapat menggeser (drag) penanda biru ke lokasi yang tepat. Ini akan menjadi koordinat titik penjemputan pembeli di peta utama.
+                </p>
+                <div className="h-60 w-full rounded-2xl border border-secondary/30 overflow-hidden relative shadow-inner z-0">
+                  <MapContainer
+                    center={[storeInfo?.location?.lat || -6.2088, storeInfo?.location?.lng || 106.8456]}
+                    zoom={13}
+                    className="h-full w-full"
+                  >
+                    <TileLayer
+                      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    />
+                    <MapPinPicker 
+                      lat={storeInfo?.location?.lat || -6.2088}
+                      lng={storeInfo?.location?.lng || 106.8456}
+                      onChange={(lat, lng) => {
+                        const prevLoc = storeInfo?.location || {};
+                        setStoreInfo({
+                          ...storeInfo,
+                          location: {
+                            ...prevLoc,
+                            lat,
+                            lng
+                          }
+                        });
+                        toast.success(`Koordinat toko diperbarui ke: ${lat.toFixed(5)}, ${lng.toFixed(5)}`);
+                      }}
+                    />
+                  </MapContainer>
+                </div>
+                <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-muted-foreground bg-white/70 p-2.5 rounded-xl border border-muted font-mono">
+                  <div><span className="font-semibold text-slate-500">Lat:</span> {storeInfo?.location?.lat || -6.2088}</div>
+                  <div><span className="font-semibold text-slate-500">Lng:</span> {storeInfo?.location?.lng || 106.8456}</div>
+                </div>
+              </div>
+
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="regHours">Jam Operasional Toko</Label>
@@ -1506,18 +1604,16 @@ export default function FloristDashboard() {
         )}
 
         <div className="grid grid-cols-12 gap-6 items-start relative mt-6">
-          {/* Sidebar Navigation Panel - persistent on desktop, drawer on mobile */}
+          {/* Mobile Drawer (visible only on mobile) */}
           <div className={`
-            col-span-12 lg:col-span-3 
-            fixed inset-y-0 left-0 z-[90] w-72 bg-card p-6 border-r border-secondary/50 shadow-2xl lg:shadow-none
-            lg:relative lg:inset-auto lg:z-auto lg:w-auto lg:bg-transparent lg:p-0 lg:border-none
-            transform transition-transform duration-300 ease-in-out h-full lg:h-auto
-            ${isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
+            fixed inset-y-0 left-0 z-[100] w-72 bg-card border-r border-secondary/50 shadow-2xl lg:hidden
+            transform transition-transform duration-300 ease-in-out h-full flex flex-col p-6
+            ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"}
           `}>
-            <Card className="rounded-3xl border border-secondary/50 bg-card/65 backdrop-blur-md p-4 lg:p-5 h-full lg:sticky lg:top-6 flex flex-col justify-between shadow-sm">
+            <div className="flex flex-col h-full justify-between">
               <div className="space-y-6">
-                {/* Sidebar Header */}
-                <div className="flex items-center justify-between lg:justify-start gap-3 border-b border-secondary/60 pb-4">
+                {/* Mobile Drawer Header */}
+                <div className="flex items-center justify-between gap-3 border-b border-secondary/60 pb-4">
                   <div className="flex items-center gap-2.5">
                     <div className="p-2 bg-primary text-primary-foreground rounded-xl shadow-md">
                       <StoreIcon className="h-4 w-4" />
@@ -1531,13 +1627,13 @@ export default function FloristDashboard() {
                     variant="ghost" 
                     size="icon" 
                     onClick={() => setIsSidebarOpen(false)}
-                    className="lg:hidden rounded-full h-8 w-8 text-muted-foreground hover:bg-secondary"
+                    className="rounded-full h-8 w-8 text-muted-foreground hover:bg-secondary"
                   >
                     <X size={16} />
                   </Button>
                 </div>
 
-                {/* Navigation triggers list inside customized TabsList */}
+                {/* Mobile Navigation List */}
                 <div className="space-y-1.5">
                   <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider pl-3 block mb-2">Menu Navigasi</span>
                   
@@ -1597,6 +1693,130 @@ export default function FloristDashboard() {
                     </TabsTrigger>
                   </TabsList>
                 </div>
+              </div>
+
+              {/* Mobile Drawer Bottom Actions */}
+              <div className="space-y-2 pt-4 border-t border-secondary/60">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => {
+                    setIsSidebarOpen(false);
+                    handleSwitchToBuyer();
+                  }}
+                  className="w-full justify-start rounded-xl px-4 py-2 text-xs font-bold border-primary/20 text-primary bg-white hover:bg-primary/5 flex items-center gap-2 h-9"
+                >
+                  <Compass className="h-3.5 w-3.5" />
+                  <span>Mode Pembeli (Exit)</span>
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => {
+                    setIsSidebarOpen(false);
+                    auth.signOut();
+                  }}
+                  className="w-full justify-start rounded-xl px-4 py-2 text-xs font-bold text-red-600 hover:bg-red-50 flex items-center gap-2 h-9"
+                >
+                  <LogOut className="h-3.5 w-3.5" />
+                  <span>Keluar Akun</span>
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Desktop Sidebar Panel - persistent, sticky, beautifully integrated */}
+          <div className="hidden lg:block lg:col-span-3">
+            <Card className="rounded-3xl border border-secondary/50 bg-card p-5 sticky top-6 flex flex-col justify-between shadow-sm min-h-[460px]">
+              <div className="space-y-6">
+                {/* Desktop Sidebar Header */}
+                <div className="flex items-center gap-2.5 border-b border-secondary/60 pb-4">
+                  <div className="p-2 bg-primary text-primary-foreground rounded-xl shadow-md">
+                    <StoreIcon className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <h3 className="font-heading font-bold text-sm text-primary leading-none">Florist Panel</h3>
+                    <p className="text-[10px] text-muted-foreground mt-1">Kelola Toko & Paket</p>
+                  </div>
+                </div>
+
+                {/* Desktop Navigation List */}
+                <div className="space-y-1.5">
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider pl-3 block mb-2">Menu Navigasi</span>
+                  
+                  <TabsList className="flex flex-col gap-1 bg-transparent h-auto w-full p-0 border-none items-stretch">
+                    <TabsTrigger 
+                      value="active" 
+                      className="w-full justify-start rounded-xl px-4 py-2.5 text-xs font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-muted-foreground hover:bg-secondary/40 hover:text-primary transition-all text-left flex items-center gap-2 border-none"
+                    >
+                      <Package className="h-4 w-4" />
+                      <span>Pesanan Aktif</span>
+                      <span className="ml-auto bg-primary/10 text-primary group-data-[state=active]:bg-white/20 group-data-[state=active]:text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                        {orders.filter(o => o.status !== "Selesai" && o.status !== "Pesanan Selesai").length}
+                      </span>
+                    </TabsTrigger>
+                    
+                    <TabsTrigger 
+                      value="history" 
+                      className="w-full justify-start rounded-xl px-4 py-2.5 text-xs font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-muted-foreground hover:bg-secondary/40 hover:text-primary transition-all text-left flex items-center gap-2 border-none"
+                    >
+                      <Clock className="h-4 w-4" />
+                      <span>Riwayat Selesai</span>
+                      <span className="ml-auto bg-slate-100 text-slate-600 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                        {orders.filter(o => o.status === "Selesai" || o.status === "Pesanan Selesai").length}
+                      </span>
+                    </TabsTrigger>
+                    
+                    <TabsTrigger 
+                      value="inventory" 
+                      className="w-full justify-start rounded-xl px-4 py-2.5 text-xs font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-muted-foreground hover:bg-secondary/40 hover:text-primary transition-all text-left flex items-center gap-2 border-none"
+                    >
+                      <Package className="h-4 w-4" />
+                      <span>Inventaris Katalog</span>
+                      <span className="ml-auto bg-slate-100 text-slate-600 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                        {products.length}
+                      </span>
+                    </TabsTrigger>
+                    
+                    <TabsTrigger 
+                      value="ads" 
+                      className="w-full justify-start rounded-xl px-4 py-2.5 text-xs font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-muted-foreground hover:bg-secondary/40 hover:text-primary transition-all text-left flex items-center gap-2 border-none"
+                    >
+                      <Zap className="h-4 w-4 text-amber-500 fill-amber-500/10" />
+                      <span>Iklan & Premium</span>
+                    </TabsTrigger>
+                    
+                    <TabsTrigger 
+                      value="settings" 
+                      className="w-full justify-start rounded-xl px-4 py-2.5 text-xs font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-muted-foreground hover:bg-secondary/40 hover:text-primary transition-all text-left flex items-center gap-2 border-none"
+                    >
+                      <Settings className="h-4 w-4" />
+                      <span>Profil Toko</span>
+                    </TabsTrigger>
+                  </TabsList>
+                </div>
+              </div>
+
+              {/* Desktop Sidebar Bottom Actions */}
+              <div className="space-y-2 pt-4 border-t border-secondary/60 mt-auto">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={handleSwitchToBuyer}
+                  className="w-full justify-start rounded-xl px-4 py-2 text-xs font-bold border-primary/20 text-primary bg-white hover:bg-primary/5 flex items-center gap-2 h-9"
+                >
+                  <Compass className="h-3.5 w-3.5" />
+                  <span>Mode Pembeli (Exit)</span>
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => auth.signOut()}
+                  className="w-full justify-start rounded-xl px-4 py-2 text-xs font-bold text-red-600 hover:bg-red-50 flex items-center gap-2 h-9"
+                >
+                  <LogOut className="h-3.5 w-3.5" />
+                  <span>Keluar Akun</span>
+                </Button>
               </div>
             </Card>
           </div>
@@ -2551,6 +2771,49 @@ export default function FloristDashboard() {
                           placeholder="Masukkan alamat lengkap..."
                           required
                         />
+                      </div>
+                    </div>
+
+                    {/* Interactive map drop-pin selection on edit profile */}
+                    <div className="space-y-3 p-4 bg-secondary/15 rounded-3xl border border-secondary/30">
+                      <Label className="flex items-center gap-1.5 text-foreground font-bold text-xs uppercase tracking-wide">
+                        <MapIcon className="h-4 w-4 text-primary" />
+                        <span>Sesuaikan Drop Pin Lokasi Toko Anda 📍</span>
+                      </Label>
+                      <p className="text-[11px] text-muted-foreground leading-relaxed">
+                        Klik pada peta atau geser penanda pin biru di bawah ini ke lokasi persis toko Anda untuk memudahkan pembeli menemukan Anda di peta utama.
+                      </p>
+                      <div className="h-60 w-full rounded-2xl border border-secondary/30 overflow-hidden relative shadow-inner z-0">
+                        <MapContainer
+                          center={[storeInfo?.location?.lat || -6.2088, storeInfo?.location?.lng || 106.8456]}
+                          zoom={13}
+                          className="h-full w-full"
+                        >
+                          <TileLayer
+                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                          />
+                          <MapPinPicker 
+                            lat={storeInfo?.location?.lat || -6.2088}
+                            lng={storeInfo?.location?.lng || 106.8456}
+                            onChange={(lat, lng) => {
+                              const prevLoc = storeInfo?.location || {};
+                              setStoreInfo({
+                                ...storeInfo,
+                                location: {
+                                  ...prevLoc,
+                                  lat,
+                                  lng
+                                }
+                              });
+                              toast.success(`Koordinat toko diperbarui ke: ${lat.toFixed(5)}, ${lng.toFixed(5)}`);
+                            }}
+                          />
+                        </MapContainer>
+                      </div>
+                      <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-muted-foreground bg-white/70 p-2.5 rounded-xl border border-muted font-mono">
+                        <div><span className="font-semibold text-slate-500">Lat:</span> {storeInfo?.location?.lat || -6.2088}</div>
+                        <div><span className="font-semibold text-slate-500">Lng:</span> {storeInfo?.location?.lng || 106.8456}</div>
                       </div>
                     </div>
 

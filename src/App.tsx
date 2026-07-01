@@ -77,7 +77,11 @@ export default function App() {
     runningText: "Selamat datang di TitikKembang! Dapatkan bervariasi produk buket bunga kawat bulu (plush wire bouquet) buatan crafter lokal terbaik dengan penawaran menarik! ✨",
     promoText: "Diskon Ongkir / Pick-up!",
     emailVisible: "support@titikkembang.com",
-    isMaintenance: false
+    isMaintenance: false,
+    logoType: "default",
+    logoUrl: "",
+    logoBgColor: "#1E3E2A",
+    logoTextColor: "#E8F2EC"
   });
 
   // Advanced Sorting & Filtering Controls
@@ -270,7 +274,7 @@ export default function App() {
       }
     }
     loadWebSettings();
-  }, [view]);
+  }, []);
 
   useEffect(() => {
     async function loadStoresAndCleanup() {
