@@ -1594,7 +1594,7 @@ export default function FloristDashboard() {
         </Card>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} orientation="vertical" className="w-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         {/* Backdrop for mobile sidebar drawer */}
         {isSidebarOpen && (
           <div 
@@ -1637,61 +1637,82 @@ export default function FloristDashboard() {
                 <div className="space-y-1.5">
                   <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider pl-3 block mb-2">Menu Navigasi</span>
                   
-                  <TabsList className="flex flex-col gap-1 bg-transparent h-auto w-full p-0 border-none items-stretch">
-                    <TabsTrigger 
-                      value="active" 
-                      onClick={() => setIsSidebarOpen(false)}
-                      className="group w-full justify-start rounded-xl px-4 py-2.5 text-xs font-semibold data-active:bg-primary data-active:text-primary-foreground data-[active]:bg-primary data-[active]:text-primary-foreground text-muted-foreground hover:bg-secondary/40 hover:text-primary transition-all text-left flex items-center gap-2 border-none"
+                  <div className="flex flex-col gap-1 w-full items-stretch">
+                    <button 
+                      onClick={() => { setActiveTab("active"); setIsSidebarOpen(false); }}
+                      className={`group w-full justify-start rounded-xl px-4 py-2.5 text-xs font-semibold text-left flex items-center gap-2 transition-all ${
+                        activeTab === "active"
+                          ? "bg-primary text-primary-foreground font-bold shadow-sm"
+                          : "text-muted-foreground hover:bg-secondary/40 hover:text-primary"
+                      }`}
                     >
                       <Package className="h-4 w-4" />
                       <span>Pesanan Aktif</span>
-                      <span className="ml-auto bg-primary/10 text-primary group-data-active:bg-white/20 group-data-active:text-white group-data-[active]:bg-white/20 group-data-[active]:text-white text-[10px] font-bold px-2 py-0.5 rounded-full transition-all">
+                      <span className={`ml-auto text-[10px] font-bold px-2 py-0.5 rounded-full transition-all ${
+                        activeTab === "active" ? "bg-white/20 text-white" : "bg-primary/10 text-primary"
+                      }`}>
                         {orders.filter(o => o.status !== "Selesai" && o.status !== "Pesanan Selesai").length}
                       </span>
-                    </TabsTrigger>
+                    </button>
                     
-                    <TabsTrigger 
-                      value="history" 
-                      onClick={() => setIsSidebarOpen(false)}
-                      className="group w-full justify-start rounded-xl px-4 py-2.5 text-xs font-semibold data-active:bg-primary data-active:text-primary-foreground data-[active]:bg-primary data-[active]:text-primary-foreground text-muted-foreground hover:bg-secondary/40 hover:text-primary transition-all text-left flex items-center gap-2 border-none"
+                    <button 
+                      onClick={() => { setActiveTab("history"); setIsSidebarOpen(false); }}
+                      className={`group w-full justify-start rounded-xl px-4 py-2.5 text-xs font-semibold text-left flex items-center gap-2 transition-all ${
+                        activeTab === "history"
+                          ? "bg-primary text-primary-foreground font-bold shadow-sm"
+                          : "text-muted-foreground hover:bg-secondary/40 hover:text-primary"
+                      }`}
                     >
                       <Clock className="h-4 w-4" />
                       <span>Riwayat Selesai</span>
-                      <span className="ml-auto bg-slate-100 text-slate-600 group-data-active:bg-white/20 group-data-active:text-white group-data-[active]:bg-white/20 group-data-[active]:text-white text-[10px] font-bold px-2 py-0.5 rounded-full transition-all">
+                      <span className={`ml-auto text-[10px] font-bold px-2 py-0.5 rounded-full transition-all ${
+                        activeTab === "history" ? "bg-white/20 text-white" : "bg-slate-100 text-slate-600"
+                      }`}>
                         {orders.filter(o => o.status === "Selesai" || o.status === "Pesanan Selesai").length}
                       </span>
-                    </TabsTrigger>
+                    </button>
                     
-                    <TabsTrigger 
-                      value="inventory" 
-                      onClick={() => setIsSidebarOpen(false)}
-                      className="group w-full justify-start rounded-xl px-4 py-2.5 text-xs font-semibold data-active:bg-primary data-active:text-primary-foreground data-[active]:bg-primary data-[active]:text-primary-foreground text-muted-foreground hover:bg-secondary/40 hover:text-primary transition-all text-left flex items-center gap-2 border-none"
+                    <button 
+                      onClick={() => { setActiveTab("inventory"); setIsSidebarOpen(false); }}
+                      className={`group w-full justify-start rounded-xl px-4 py-2.5 text-xs font-semibold text-left flex items-center gap-2 transition-all ${
+                        activeTab === "inventory"
+                          ? "bg-primary text-primary-foreground font-bold shadow-sm"
+                          : "text-muted-foreground hover:bg-secondary/40 hover:text-primary"
+                      }`}
                     >
                       <Package className="h-4 w-4" />
                       <span>Inventaris Katalog</span>
-                      <span className="ml-auto bg-slate-100 text-slate-600 group-data-active:bg-white/20 group-data-active:text-white group-data-[active]:bg-white/20 group-data-[active]:text-white text-[10px] font-bold px-2 py-0.5 rounded-full transition-all">
+                      <span className={`ml-auto text-[10px] font-bold px-2 py-0.5 rounded-full transition-all ${
+                        activeTab === "inventory" ? "bg-white/20 text-white" : "bg-slate-100 text-slate-600"
+                      }`}>
                         {products.length}
                       </span>
-                    </TabsTrigger>
+                    </button>
                     
-                    <TabsTrigger 
-                      value="ads" 
-                      onClick={() => setIsSidebarOpen(false)}
-                      className="group w-full justify-start rounded-xl px-4 py-2.5 text-xs font-semibold data-active:bg-primary data-active:text-primary-foreground data-[active]:bg-primary data-[active]:text-primary-foreground text-muted-foreground hover:bg-secondary/40 hover:text-primary transition-all text-left flex items-center gap-2 border-none"
+                    <button 
+                      onClick={() => { setActiveTab("ads"); setIsSidebarOpen(false); }}
+                      className={`group w-full justify-start rounded-xl px-4 py-2.5 text-xs font-semibold text-left flex items-center gap-2 transition-all ${
+                        activeTab === "ads"
+                          ? "bg-primary text-primary-foreground font-bold shadow-sm"
+                          : "text-muted-foreground hover:bg-secondary/40 hover:text-primary"
+                      }`}
                     >
-                      <Zap className="h-4 w-4 text-amber-500 fill-amber-500/10 group-data-active:text-primary-foreground group-data-[active]:text-primary-foreground" />
+                      <Zap className={`h-4 w-4 transition-colors ${activeTab === "ads" ? "text-primary-foreground fill-white/10" : "text-amber-500 fill-amber-500/10"}`} />
                       <span>Iklan & Premium</span>
-                    </TabsTrigger>
+                    </button>
                     
-                    <TabsTrigger 
-                      value="settings" 
-                      onClick={() => setIsSidebarOpen(false)}
-                      className="group w-full justify-start rounded-xl px-4 py-2.5 text-xs font-semibold data-active:bg-primary data-active:text-primary-foreground data-[active]:bg-primary data-[active]:text-primary-foreground text-muted-foreground hover:bg-secondary/40 hover:text-primary transition-all text-left flex items-center gap-2 border-none"
+                    <button 
+                      onClick={() => { setActiveTab("settings"); setIsSidebarOpen(false); }}
+                      className={`group w-full justify-start rounded-xl px-4 py-2.5 text-xs font-semibold text-left flex items-center gap-2 transition-all ${
+                        activeTab === "settings"
+                          ? "bg-primary text-primary-foreground font-bold shadow-sm"
+                          : "text-muted-foreground hover:bg-secondary/40 hover:text-primary"
+                      }`}
                     >
                       <Settings className="h-4 w-4" />
                       <span>Profil Toko</span>
-                    </TabsTrigger>
-                  </TabsList>
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -1744,56 +1765,82 @@ export default function FloristDashboard() {
                 <div className="space-y-1.5">
                   <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider pl-3 block mb-2">Menu Navigasi</span>
                   
-                  <TabsList className="flex flex-col gap-1 bg-transparent h-auto w-full p-0 border-none items-stretch">
-                    <TabsTrigger 
-                      value="active" 
-                      className="group w-full justify-start rounded-xl px-4 py-2.5 text-xs font-semibold data-active:bg-primary data-active:text-primary-foreground data-[active]:bg-primary data-[active]:text-primary-foreground text-muted-foreground hover:bg-secondary/40 hover:text-primary transition-all text-left flex items-center gap-2 border-none"
+                  <div className="flex flex-col gap-1 w-full items-stretch">
+                    <button 
+                      onClick={() => setActiveTab("active")}
+                      className={`group w-full justify-start rounded-xl px-4 py-2.5 text-xs font-semibold text-left flex items-center gap-2 transition-all ${
+                        activeTab === "active"
+                          ? "bg-primary text-primary-foreground font-bold shadow-sm"
+                          : "text-muted-foreground hover:bg-secondary/40 hover:text-primary"
+                      }`}
                     >
                       <Package className="h-4 w-4" />
                       <span>Pesanan Aktif</span>
-                      <span className="ml-auto bg-primary/10 text-primary group-data-active:bg-white/20 group-data-active:text-white group-data-[active]:bg-white/20 group-data-[active]:text-white text-[10px] font-bold px-2 py-0.5 rounded-full transition-all">
+                      <span className={`ml-auto text-[10px] font-bold px-2 py-0.5 rounded-full transition-all ${
+                        activeTab === "active" ? "bg-white/20 text-white" : "bg-primary/10 text-primary"
+                      }`}>
                         {orders.filter(o => o.status !== "Selesai" && o.status !== "Pesanan Selesai").length}
                       </span>
-                    </TabsTrigger>
+                    </button>
                     
-                    <TabsTrigger 
-                      value="history" 
-                      className="group w-full justify-start rounded-xl px-4 py-2.5 text-xs font-semibold data-active:bg-primary data-active:text-primary-foreground data-[active]:bg-primary data-[active]:text-primary-foreground text-muted-foreground hover:bg-secondary/40 hover:text-primary transition-all text-left flex items-center gap-2 border-none"
+                    <button 
+                      onClick={() => setActiveTab("history")}
+                      className={`group w-full justify-start rounded-xl px-4 py-2.5 text-xs font-semibold text-left flex items-center gap-2 transition-all ${
+                        activeTab === "history"
+                          ? "bg-primary text-primary-foreground font-bold shadow-sm"
+                          : "text-muted-foreground hover:bg-secondary/40 hover:text-primary"
+                      }`}
                     >
                       <Clock className="h-4 w-4" />
                       <span>Riwayat Selesai</span>
-                      <span className="ml-auto bg-slate-100 text-slate-600 group-data-active:bg-white/20 group-data-active:text-white group-data-[active]:bg-white/20 group-data-[active]:text-white text-[10px] font-bold px-2 py-0.5 rounded-full transition-all">
+                      <span className={`ml-auto text-[10px] font-bold px-2 py-0.5 rounded-full transition-all ${
+                        activeTab === "history" ? "bg-white/20 text-white" : "bg-slate-100 text-slate-600"
+                      }`}>
                         {orders.filter(o => o.status === "Selesai" || o.status === "Pesanan Selesai").length}
                       </span>
-                    </TabsTrigger>
+                    </button>
                     
-                    <TabsTrigger 
-                      value="inventory" 
-                      className="group w-full justify-start rounded-xl px-4 py-2.5 text-xs font-semibold data-active:bg-primary data-active:text-primary-foreground data-[active]:bg-primary data-[active]:text-primary-foreground text-muted-foreground hover:bg-secondary/40 hover:text-primary transition-all text-left flex items-center gap-2 border-none"
+                    <button 
+                      onClick={() => setActiveTab("inventory")}
+                      className={`group w-full justify-start rounded-xl px-4 py-2.5 text-xs font-semibold text-left flex items-center gap-2 transition-all ${
+                        activeTab === "inventory"
+                          ? "bg-primary text-primary-foreground font-bold shadow-sm"
+                          : "text-muted-foreground hover:bg-secondary/40 hover:text-primary"
+                      }`}
                     >
                       <Package className="h-4 w-4" />
                       <span>Inventaris Katalog</span>
-                      <span className="ml-auto bg-slate-100 text-slate-600 group-data-active:bg-white/20 group-data-active:text-white group-data-[active]:bg-white/20 group-data-[active]:text-white text-[10px] font-bold px-2 py-0.5 rounded-full transition-all">
+                      <span className={`ml-auto text-[10px] font-bold px-2 py-0.5 rounded-full transition-all ${
+                        activeTab === "inventory" ? "bg-white/20 text-white" : "bg-slate-100 text-slate-600"
+                      }`}>
                         {products.length}
                       </span>
-                    </TabsTrigger>
+                    </button>
                     
-                    <TabsTrigger 
-                      value="ads" 
-                      className="group w-full justify-start rounded-xl px-4 py-2.5 text-xs font-semibold data-active:bg-primary data-active:text-primary-foreground data-[active]:bg-primary data-[active]:text-primary-foreground text-muted-foreground hover:bg-secondary/40 hover:text-primary transition-all text-left flex items-center gap-2 border-none"
+                    <button 
+                      onClick={() => setActiveTab("ads")}
+                      className={`group w-full justify-start rounded-xl px-4 py-2.5 text-xs font-semibold text-left flex items-center gap-2 transition-all ${
+                        activeTab === "ads"
+                          ? "bg-primary text-primary-foreground font-bold shadow-sm"
+                          : "text-muted-foreground hover:bg-secondary/40 hover:text-primary"
+                      }`}
                     >
-                      <Zap className="h-4 w-4 text-amber-500 fill-amber-500/10 group-data-active:text-primary-foreground group-data-[active]:text-primary-foreground" />
+                      <Zap className={`h-4 w-4 transition-colors ${activeTab === "ads" ? "text-primary-foreground fill-white/10" : "text-amber-500 fill-amber-500/10"}`} />
                       <span>Iklan & Premium</span>
-                    </TabsTrigger>
+                    </button>
                     
-                    <TabsTrigger 
-                      value="settings" 
-                      className="group w-full justify-start rounded-xl px-4 py-2.5 text-xs font-semibold data-active:bg-primary data-active:text-primary-foreground data-[active]:bg-primary data-[active]:text-primary-foreground text-muted-foreground hover:bg-secondary/40 hover:text-primary transition-all text-left flex items-center gap-2 border-none"
+                    <button 
+                      onClick={() => setActiveTab("settings")}
+                      className={`group w-full justify-start rounded-xl px-4 py-2.5 text-xs font-semibold text-left flex items-center gap-2 transition-all ${
+                        activeTab === "settings"
+                          ? "bg-primary text-primary-foreground font-bold shadow-sm"
+                          : "text-muted-foreground hover:bg-secondary/40 hover:text-primary"
+                      }`}
                     >
                       <Settings className="h-4 w-4" />
                       <span>Profil Toko</span>
-                    </TabsTrigger>
-                  </TabsList>
+                    </button>
+                  </div>
                 </div>
               </div>
 
