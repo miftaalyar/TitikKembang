@@ -337,10 +337,6 @@ export default function AdminDashboard() {
   // NEW: Promo Banners Management Handlers
   const handleSaveBanner = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!bannerForm.title) {
-      toast.error("Judul iklan wajib diisi!");
-      return;
-    }
     if (!bannerForm.imageUrl) {
       toast.error("Silakan unggah gambar banner terlebih dahulu!");
       return;
@@ -2101,15 +2097,15 @@ export default function AdminDashboard() {
                 <CardContent className="p-6">
                   <form onSubmit={handleSaveBanner} className="space-y-4">
                     <div className="space-y-1.55">
-                      <Label htmlFor="bannerTitle" className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Judul Iklan Promo</Label>
+                      <Label htmlFor="bannerTitle" className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Judul Iklan Promo (Opsional)</Label>
                       <Input 
                         id="bannerTitle"
                         placeholder="Contoh: Diskon Flash Hari Raya! 🎉"
                         value={bannerForm.title}
                         onChange={(e) => setBannerForm({ ...bannerForm, title: e.target.value })}
-                        required
                         className="rounded-xl h-10 border-muted"
                       />
+                      <span className="text-[10px] text-muted-foreground block mt-0.5">Kosongkan jika poster spanduk Anda sudah memiliki tulisan di dalam gambar (Image Only).</span>
                     </div>
 
                     <div className="space-y-1.55">
@@ -2371,10 +2367,10 @@ export default function AdminDashboard() {
                           <div>
                             <div className="flex items-start justify-between gap-2">
                               <h4 className="font-heading font-extrabold text-base text-foreground flex items-center gap-1.5">
-                                {banner.title}
+                                {banner.title || <span className="text-muted-foreground font-normal italic text-xs">Tanpa Judul (Hanya Gambar/Deskripsi)</span>}
                               </h4>
                               <span 
-                                onClick={() => handleToggleBannerActive(banner.id, banner.isActive, banner.title)}
+                                onClick={() => handleToggleBannerActive(banner.id, banner.isActive, banner.title || "Tanpa Judul")}
                                 className={`cursor-pointer inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold border select-none transition-all ${
                                   banner.isActive !== false 
                                     ? "bg-green-50 text-green-700 border-green-200 hover:bg-green-100" 
@@ -2434,7 +2430,7 @@ export default function AdminDashboard() {
                               variant="destructive" 
                               size="sm" 
                               className="rounded-full text-xs font-bold h-8 text-white"
-                              onClick={() => handleDeleteBannerClick(banner.id, banner.title)}
+                              onClick={() => handleDeleteBannerClick(banner.id, banner.title || "Tanpa Judul")}
                             >
                               Hapus
                             </Button>

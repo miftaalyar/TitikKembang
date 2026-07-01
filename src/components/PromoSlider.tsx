@@ -162,12 +162,16 @@ export default function PromoSlider({ onSelectCategory, onSwitchView, refreshTri
                   <Sparkles className="h-3 w-3 text-amber-400" />
                   <span>IKLAN PENAWARAN</span>
                 </div>
-                <h3 className="font-heading text-xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold tracking-tight leading-tight text-white drop-shadow-md">
-                  {activeBanner.title}
-                </h3>
-                <p className="mt-2 text-xs sm:text-sm md:text-base text-white/90 font-medium max-w-xl drop-shadow-sm line-clamp-2">
-                  {activeBanner.description}
-                </p>
+                {activeBanner.title && (
+                  <h3 className="font-heading text-xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold tracking-tight leading-tight text-white drop-shadow-md">
+                    {activeBanner.title}
+                  </h3>
+                )}
+                {activeBanner.description && (
+                  <p className="mt-2 text-xs sm:text-sm md:text-base text-white/90 font-medium max-w-xl drop-shadow-sm line-clamp-2">
+                    {activeBanner.description}
+                  </p>
+                )}
                 {activeBanner.linkUrl && (
                   <div className="mt-4 hidden sm:block">
                     <span className="inline-flex items-center gap-1 px-4 py-1.5 rounded-full bg-white text-primary font-bold text-xs hover:bg-slate-50 transition-all shadow-sm">
