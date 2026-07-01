@@ -4,6 +4,7 @@
   "apiKey": "AIzaSyDh9Dx6i4s46VNkkllmN2Alkp61MkUOQ_E",
   "authDomain": "titikkembang.firebaseapp.com",
   "firestoreDatabaseId": "(default)",
+  "databaseId": "(default)",
   "storageBucket": "titikkembang.firebasestorage.app",
   "messagingSenderId": "67437762467",
   "measurementId": "G-MC8NCRJY38"

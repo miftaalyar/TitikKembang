@@ -10,7 +10,7 @@ import CustomerDashboard from "@/src/pages/CustomerDashboard";
 import AuthModal from "@/src/components/AuthModal";
 import PrivacyPolicyModal from "@/src/components/PrivacyPolicyModal";
 import PromoSlider from "@/src/components/PromoSlider";
-import { fetchProducts, fetchStores, seedDatabase, getUserProfile, deleteStore, deleteProduct, updateStoreProfile, fetchWebConfig } from "@/src/lib/dataService";
+import { fetchProducts, fetchStores, seedDatabase, getUserProfile, deleteStore, deleteProduct, updateStoreProfile, fetchWebConfig, subscribeWebConfig } from "@/src/lib/dataService";
 import { DUMMY_STORES, getDummyProductsForStore } from "@/src/data/dummyStores";
 import { auth } from "@/src/lib/firebase";
 import { onAuthStateChanged, User } from "firebase/auth";
@@ -265,15 +265,10 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    async function loadWebSettings() {
-      try {
-        const cfg = await fetchWebConfig();
-        if (cfg) setWebConfig(cfg);
-      } catch (e) {
-        console.warn("Offline or failed loading webSettings configuration in App.tsx:", e);
-      }
-    }
-    loadWebSettings();
+    const unsubscribe = subscribeWebConfig((cfg) => {
+      if (cfg) setWebConfig(cfg);
+    });
+    return () => unsubscribe();
   }, []);
 
   useEffect(() => {

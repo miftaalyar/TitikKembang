@@ -9,7 +9,8 @@ import {
   getDoc,
   deleteDoc,
   updateDoc,
-  serverTimestamp 
+  serverTimestamp,
+  onSnapshot
 } from "firebase/firestore";
 import { db } from "./firebase";
 
@@ -469,6 +470,25 @@ export async function fetchWebConfig() {
     console.warn("Offline or error fetching web configuration:", error);
     return { id: "configuration", ...DEFAULT_WEB_CONFIG };
   }
+}
+
+export function subscribeWebConfig(callback: (config: any) => void) {
+  const docRef = doc(db, "webSettings", "configuration");
+  return onSnapshot(docRef, (docSnap) => {
+    if (docSnap.exists()) {
+      callback({ id: docSnap.id, ...docSnap.data() });
+    } else {
+      // Seed default
+      setDoc(docRef, DEFAULT_WEB_CONFIG).then(() => {
+        callback({ id: "configuration", ...DEFAULT_WEB_CONFIG });
+      }).catch((e) => {
+        console.warn("Failed to seed default web config in snapshot:", e);
+        callback({ id: "configuration", ...DEFAULT_WEB_CONFIG });
+      });
+    }
+  }, (error) => {
+    console.warn("Error listening to web settings:", error);
+  });
 }
 
 export async function updateWebConfig(configData: any) {

@@ -1641,11 +1641,11 @@ export default function FloristDashboard() {
                     <TabsTrigger 
                       value="active" 
                       onClick={() => setIsSidebarOpen(false)}
-                      className="w-full justify-start rounded-xl px-4 py-2.5 text-xs font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-muted-foreground hover:bg-secondary/40 hover:text-primary transition-all text-left flex items-center gap-2 border-none"
+                      className="group w-full justify-start rounded-xl px-4 py-2.5 text-xs font-semibold data-active:bg-primary data-active:text-primary-foreground data-[active]:bg-primary data-[active]:text-primary-foreground text-muted-foreground hover:bg-secondary/40 hover:text-primary transition-all text-left flex items-center gap-2 border-none"
                     >
                       <Package className="h-4 w-4" />
                       <span>Pesanan Aktif</span>
-                      <span className="ml-auto bg-primary/10 text-primary group-data-[state=active]:bg-white/20 group-data-[state=active]:text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                      <span className="ml-auto bg-primary/10 text-primary group-data-active:bg-white/20 group-data-active:text-white group-data-[active]:bg-white/20 group-data-[active]:text-white text-[10px] font-bold px-2 py-0.5 rounded-full transition-all">
                         {orders.filter(o => o.status !== "Selesai" && o.status !== "Pesanan Selesai").length}
                       </span>
                     </TabsTrigger>
@@ -1653,11 +1653,11 @@ export default function FloristDashboard() {
                     <TabsTrigger 
                       value="history" 
                       onClick={() => setIsSidebarOpen(false)}
-                      className="w-full justify-start rounded-xl px-4 py-2.5 text-xs font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-muted-foreground hover:bg-secondary/40 hover:text-primary transition-all text-left flex items-center gap-2 border-none"
+                      className="group w-full justify-start rounded-xl px-4 py-2.5 text-xs font-semibold data-active:bg-primary data-active:text-primary-foreground data-[active]:bg-primary data-[active]:text-primary-foreground text-muted-foreground hover:bg-secondary/40 hover:text-primary transition-all text-left flex items-center gap-2 border-none"
                     >
                       <Clock className="h-4 w-4" />
                       <span>Riwayat Selesai</span>
-                      <span className="ml-auto bg-slate-100 text-slate-600 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                      <span className="ml-auto bg-slate-100 text-slate-600 group-data-active:bg-white/20 group-data-active:text-white group-data-[active]:bg-white/20 group-data-[active]:text-white text-[10px] font-bold px-2 py-0.5 rounded-full transition-all">
                         {orders.filter(o => o.status === "Selesai" || o.status === "Pesanan Selesai").length}
                       </span>
                     </TabsTrigger>
@@ -1665,11 +1665,11 @@ export default function FloristDashboard() {
                     <TabsTrigger 
                       value="inventory" 
                       onClick={() => setIsSidebarOpen(false)}
-                      className="w-full justify-start rounded-xl px-4 py-2.5 text-xs font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-muted-foreground hover:bg-secondary/40 hover:text-primary transition-all text-left flex items-center gap-2 border-none"
+                      className="group w-full justify-start rounded-xl px-4 py-2.5 text-xs font-semibold data-active:bg-primary data-active:text-primary-foreground data-[active]:bg-primary data-[active]:text-primary-foreground text-muted-foreground hover:bg-secondary/40 hover:text-primary transition-all text-left flex items-center gap-2 border-none"
                     >
                       <Package className="h-4 w-4" />
                       <span>Inventaris Katalog</span>
-                      <span className="ml-auto bg-slate-100 text-slate-600 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                      <span className="ml-auto bg-slate-100 text-slate-600 group-data-active:bg-white/20 group-data-active:text-white group-data-[active]:bg-white/20 group-data-[active]:text-white text-[10px] font-bold px-2 py-0.5 rounded-full transition-all">
                         {products.length}
                       </span>
                     </TabsTrigger>
@@ -1677,16 +1677,16 @@ export default function FloristDashboard() {
                     <TabsTrigger 
                       value="ads" 
                       onClick={() => setIsSidebarOpen(false)}
-                      className="w-full justify-start rounded-xl px-4 py-2.5 text-xs font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-muted-foreground hover:bg-secondary/40 hover:text-primary transition-all text-left flex items-center gap-2 border-none"
+                      className="group w-full justify-start rounded-xl px-4 py-2.5 text-xs font-semibold data-active:bg-primary data-active:text-primary-foreground data-[active]:bg-primary data-[active]:text-primary-foreground text-muted-foreground hover:bg-secondary/40 hover:text-primary transition-all text-left flex items-center gap-2 border-none"
                     >
-                      <Zap className="h-4 w-4 text-amber-500 fill-amber-500/10" />
+                      <Zap className="h-4 w-4 text-amber-500 fill-amber-500/10 group-data-active:text-primary-foreground group-data-[active]:text-primary-foreground" />
                       <span>Iklan & Premium</span>
                     </TabsTrigger>
                     
                     <TabsTrigger 
                       value="settings" 
                       onClick={() => setIsSidebarOpen(false)}
-                      className="w-full justify-start rounded-xl px-4 py-2.5 text-xs font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-muted-foreground hover:bg-secondary/40 hover:text-primary transition-all text-left flex items-center gap-2 border-none"
+                      className="group w-full justify-start rounded-xl px-4 py-2.5 text-xs font-semibold data-active:bg-primary data-active:text-primary-foreground data-[active]:bg-primary data-[active]:text-primary-foreground text-muted-foreground hover:bg-secondary/40 hover:text-primary transition-all text-left flex items-center gap-2 border-none"
                     >
                       <Settings className="h-4 w-4" />
                       <span>Profil Toko</span>
@@ -1747,48 +1747,48 @@ export default function FloristDashboard() {
                   <TabsList className="flex flex-col gap-1 bg-transparent h-auto w-full p-0 border-none items-stretch">
                     <TabsTrigger 
                       value="active" 
-                      className="w-full justify-start rounded-xl px-4 py-2.5 text-xs font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-muted-foreground hover:bg-secondary/40 hover:text-primary transition-all text-left flex items-center gap-2 border-none"
+                      className="group w-full justify-start rounded-xl px-4 py-2.5 text-xs font-semibold data-active:bg-primary data-active:text-primary-foreground data-[active]:bg-primary data-[active]:text-primary-foreground text-muted-foreground hover:bg-secondary/40 hover:text-primary transition-all text-left flex items-center gap-2 border-none"
                     >
                       <Package className="h-4 w-4" />
                       <span>Pesanan Aktif</span>
-                      <span className="ml-auto bg-primary/10 text-primary group-data-[state=active]:bg-white/20 group-data-[state=active]:text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                      <span className="ml-auto bg-primary/10 text-primary group-data-active:bg-white/20 group-data-active:text-white group-data-[active]:bg-white/20 group-data-[active]:text-white text-[10px] font-bold px-2 py-0.5 rounded-full transition-all">
                         {orders.filter(o => o.status !== "Selesai" && o.status !== "Pesanan Selesai").length}
                       </span>
                     </TabsTrigger>
                     
                     <TabsTrigger 
                       value="history" 
-                      className="w-full justify-start rounded-xl px-4 py-2.5 text-xs font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-muted-foreground hover:bg-secondary/40 hover:text-primary transition-all text-left flex items-center gap-2 border-none"
+                      className="group w-full justify-start rounded-xl px-4 py-2.5 text-xs font-semibold data-active:bg-primary data-active:text-primary-foreground data-[active]:bg-primary data-[active]:text-primary-foreground text-muted-foreground hover:bg-secondary/40 hover:text-primary transition-all text-left flex items-center gap-2 border-none"
                     >
                       <Clock className="h-4 w-4" />
                       <span>Riwayat Selesai</span>
-                      <span className="ml-auto bg-slate-100 text-slate-600 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                      <span className="ml-auto bg-slate-100 text-slate-600 group-data-active:bg-white/20 group-data-active:text-white group-data-[active]:bg-white/20 group-data-[active]:text-white text-[10px] font-bold px-2 py-0.5 rounded-full transition-all">
                         {orders.filter(o => o.status === "Selesai" || o.status === "Pesanan Selesai").length}
                       </span>
                     </TabsTrigger>
                     
                     <TabsTrigger 
                       value="inventory" 
-                      className="w-full justify-start rounded-xl px-4 py-2.5 text-xs font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-muted-foreground hover:bg-secondary/40 hover:text-primary transition-all text-left flex items-center gap-2 border-none"
+                      className="group w-full justify-start rounded-xl px-4 py-2.5 text-xs font-semibold data-active:bg-primary data-active:text-primary-foreground data-[active]:bg-primary data-[active]:text-primary-foreground text-muted-foreground hover:bg-secondary/40 hover:text-primary transition-all text-left flex items-center gap-2 border-none"
                     >
                       <Package className="h-4 w-4" />
                       <span>Inventaris Katalog</span>
-                      <span className="ml-auto bg-slate-100 text-slate-600 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                      <span className="ml-auto bg-slate-100 text-slate-600 group-data-active:bg-white/20 group-data-active:text-white group-data-[active]:bg-white/20 group-data-[active]:text-white text-[10px] font-bold px-2 py-0.5 rounded-full transition-all">
                         {products.length}
                       </span>
                     </TabsTrigger>
                     
                     <TabsTrigger 
                       value="ads" 
-                      className="w-full justify-start rounded-xl px-4 py-2.5 text-xs font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-muted-foreground hover:bg-secondary/40 hover:text-primary transition-all text-left flex items-center gap-2 border-none"
+                      className="group w-full justify-start rounded-xl px-4 py-2.5 text-xs font-semibold data-active:bg-primary data-active:text-primary-foreground data-[active]:bg-primary data-[active]:text-primary-foreground text-muted-foreground hover:bg-secondary/40 hover:text-primary transition-all text-left flex items-center gap-2 border-none"
                     >
-                      <Zap className="h-4 w-4 text-amber-500 fill-amber-500/10" />
+                      <Zap className="h-4 w-4 text-amber-500 fill-amber-500/10 group-data-active:text-primary-foreground group-data-[active]:text-primary-foreground" />
                       <span>Iklan & Premium</span>
                     </TabsTrigger>
                     
                     <TabsTrigger 
                       value="settings" 
-                      className="w-full justify-start rounded-xl px-4 py-2.5 text-xs font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-muted-foreground hover:bg-secondary/40 hover:text-primary transition-all text-left flex items-center gap-2 border-none"
+                      className="group w-full justify-start rounded-xl px-4 py-2.5 text-xs font-semibold data-active:bg-primary data-active:text-primary-foreground data-[active]:bg-primary data-[active]:text-primary-foreground text-muted-foreground hover:bg-secondary/40 hover:text-primary transition-all text-left flex items-center gap-2 border-none"
                     >
                       <Settings className="h-4 w-4" />
                       <span>Profil Toko</span>
